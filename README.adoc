@@ -1,0 +1,26 @@
+= potic-articles
+:linkattrs:
+
+Service for accessing user articles.
+
+== Travis job
+
+image:https://travis-ci.org/potic/potic-articles.svg?branch=develop["Travis job", link="https://travis-ci.org/potic/potic-articles"]
+
+== Code coverage
+
+image:https://codecov.io/gh/potic/potic-articles/branch/develop/graph/badge.svg["Code coverage", link="https://codecov.io/gh/potic/potic-articles"]
+
+== Docker repository
+
+https://hub.docker.com/r/potic/potic-articles/
+
+== Documentation
+
+== Documentation
+
+link:src/main/scripts/deploy[HOWTO: start service as docker container, window="_blank"]
+
+link:src/docs/configuration-parameters.adoc[Service configuration parameters]
+
+link:src/docs/environments.adoc[Environments]

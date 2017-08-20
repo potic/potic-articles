@@ -1,0 +1,52 @@
+sudo: required
+
+language: java
+
+services:
+- docker
+
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
+before_install:
+- tar xvf deployment_keys.tar
+- chmod +x gradlew
+
+install:
+- "./gradlew build jacocoTestReport --scan"
+
+after_success:
+- bash <(curl -s https://codecov.io/bash)
+
+before_script:
+- docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+- eval "$(ssh-agent -s)"
+- chmod 600 deployment_keys/deploy_test
+- ssh-add deployment_keys/deploy_test
+- chmod 600 deployment_keys/deploy_prod
+- ssh-add deployment_keys/deploy_prod
+
+script:
+- export DOCKER_REPO=potic/potic-articles
+- export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH | tr '/' '-' ; fi`
+- docker build -t $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER .
+- docker tag $DOCKER_REPO:travis-$TRAVIS_BUILD_NUMBER $DOCKER_REPO:$TAG
+- docker push $DOCKER_REPO
+- if [ "$TRAVIS_BRANCH" == "develop" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_TEST_USER"@"$DEPLOY_TEST_HOST" TAG_TO_DEPLOY=develop ENVIRONMENT_NAME=test 'bash -s' < src/main/scripts/deploy.sh; fi
+- if [ "$TRAVIS_BRANCH" == "master" ]; then ssh -o "StrictHostKeyChecking no" "$DEPLOY_PROD_USER"@"$DEPLOY_PROD_HOST" TAG_TO_DEPLOY=latest ENVIRONMENT_NAME=prod 'bash -s' < src/main/scripts/deploy.sh; fi
+
+env:
+  global:
+  - secure: BBgCws1yeLIbuhny8VPApCGa/L9TTU/KuL1eyPa5K1y8KX23zQZ7UmO68ux0zU5YGerQPipVCXpXDuFDrvP36COrmy/m3nQJGkHPx+ONUK9S3iEFECY7mW9UefUbXyrZTakAL3aous2T4QoTKZ6sKLTZrnWvxFY9XHJcxAq7KaB8/ijecsj5G8F0LvWXcbh4qX/IBfj7JSgqtQupWZx10bakjaU5kephgaMW6ILoO1dz6hTnQ+dLHDBU5m0J3zhcROr4xKMWR5XiO7UhEW49FACKcvTCZIS/0xrLnpfjh2y6wiw5np35H/3MUoKGY1+aqVyHgbdjK99fMAJy/UjdukKwFZXkac87EdbN4c5bxJ6FGw1iLkf8vxhxmh0+ad9m9FRXuEkW0BWBFo6C4/6SmKnusTZ7a0V/7deDPEfeiQrpckp+x7iUNwoqeelBQ0UVTbj0kEy+P4t0b4u2Y85kSdwrTlJbS27piXeWRjbKSt6kVCoDLDHPO5TLGG27zQ8+MmY+5n9mHoOYCUeMS3vB3rgKxucTeRsAA4aLMcvEMBg+S7wGiV1wi4bVNUIwB9XcfhACDNUk8wbCdTf93daGaWdmuQQUMnmsssZ1XEdilzMR2WfoA1WRaNn0mI4Bd7bGCGGh8GDg7KoXSghgLP97cO616Wm0anTKZFocXJjkrEc= # DOCKER_EMAIL
+  - secure: mkY+K197yWa4rvJL8GrutOUhe3va5d1R7086Qz6qzuH1Q6PkSu4R6WiKMzn5uwiKMyXHs2+UcUig5KjKd5V5XGhxLko67jbfRFiDpYpTwhrekq2vvc+rXW6H5X8ABiqFxJtbATRDFDPevHcPJATX4bm1ayKgVfHbLs879rlFp0PF2X3pOb2G9gwwDZ2mjFARZk52oF0i1gNCjZ8StUN15bUVrG7B49KAspktLvra4nR4qb1d1+w/nwf4kyV6UWE2JqRgsRe0G7fljDehrWK2/nqL4HY/e2PcERvZWebB5d+ymKN4JSy5VAhqQ3W+NlJBh7p2mdv7GD0s+ReM20m4ty1nfpzpOvM75zF+3t5hw3O7tLP8moIhWQEbp2gBmoxLzzPzgVphc1d6+u8GeuV+wPudS7hlmJkOW42oXbG4/VSRiyF5mlOFgDib94e2rCA9zGZ6lBx2M9sK1yaPphRlW3TPP1Y5uqwwvk1eFxaVsLKAtItxNHHNiUMftuFsha8C2yB22FKLByHbFGu0R4SRfStR8mmz3lbnYiAr556w6bHYXDP2aL8S+EjKmOml/OmaLXG0y1wq0suM6brKUBM8wIpbuvzZmNwOlIEVMvlayrvYQwln/TqtwHazemOLKIylK01F9teqGq+bBk2J3NJ57xTKs98h7rjrXD9kWerK460= # DOCKER_USERNAME
+  - secure: uS5YcESweuVXAEnv0M3kG88DIcPwR+zkK66QSlaxCaB7ZhE81RpQ0Kh/AbWQYfrsNhLe+nHwP2LO3b1T4xHNvg+iZt567XdPcNowseu0nv5y5Jlz1WQr6G5sa4aQN1oCQeA7AK4Ik0JPenRPmCtTjJdx1pGBwNjSgpmcXU9KIum/ICMMFspTh4c3uiRHjykRNRwTkRIMNlXIZ57QgqF42eDTtVdiMwdkzTNDR9a5DR9Mve+6mHDQDCb4U9By91JCsNMVKj058gkVQcozeSETCWLKlx7POOpvEBSceRy6DgVM1UDxD3yhCg//x9V0hcxhoXM+MSYsw7IhpLjedFxX3CiIyZKLVCbDASImIc40wvZsj+f8vivsZVx/UpHWYq4KA19cYoPkyscCWO+QXinistqOnxkdrp/Pp2QOYVl+yOxNhXvs/y2c+hK4O2KPCB2hQbrwLfLo1BkWU55tuvyKD8XQQ38kny9E/LZs2E+rDrV7fS+pqYTmv1vMfGwqw43ZUkX9/ATGwGAJGhEnSlNlqfp0tzQrGdPZeS3/G1aAoDFa94+5is26YZ1Lr7VggSImt0FGru2E0E6No61sLQTRaDHDEBSpWw36IWiDOhQRssD+lrZhG8n9T1AMgzFXxFdlYXSrEaIp+fopvH4iuyFw0iRr7gXmOTD3syF24edhSJk= # DOCKER_PASSWORD
+  - secure: N9E74hbXQghj/mXb0jgpUHyN/2gGrm6J6kugmUUDVkPp8ajYOHk0CN6jzy+rUgoz3rxj/CK+41pu1ejbZguXQrxVbebjL4HfwvDklXcb+vzqphZ8HH+H2amf1C0BukKFVdFPt+Br99YKF0TSpl7USS85utBvvYluXJId3KUmrQ3Yywjk89ojWmYjqKP4dhXWtpQOvxkoonFFERh1fPBD2Y/ziwKc7cBKvjVrJRyzJIhGJ2R5ZevXeY5h0spCKH8kGusQUtRKeS36R2Cjxs0zAJfyJ+bft5p4PyhNETY40tEd2geNELc1ENE4esrsCnESD0FNtgSv+sg/5NsDHaVVa5Lh4oMgJPYRXF5JN4D5xPaAeHpEyQt/ZLfByrx9UGPyzD6FOTCprSvGcjG1TLZ4SWtUi5UabHeXM14npZElfEJgzsMXmOCP35iATfjVmz5CjI0i/EovxSmykvXm0iYUBvyTnKHa4f6cnPi1Y03dijc/j6oFLYzICKz6i5r5Ycl6p0ZgkZ8LurgxkC5Jp4NOwEGzINue5vdSoNci/PQ7XttcEA7dGWN0pYsu5QC5/VguG/UoprtYe53k0DriHklSKMxobmhu3ApC+eX7md3ZIjuqh9tSoJxG3sFAjIPzp0nOBSplcP9klrw5VQomKrdmvyTenUHPklBipqMScBklDpw= # DEPLOY_TEST_USER
+  - secure: sv9lcZfsFl6DiVsdig6gNjXA0HMDqRaji7x8Z1CNeDHImAHb2c2xYil3I308YSuaOs+9u1LVViFli+Wco4eVmxHE7YK3LoKaEongHXaeiHuIS3lEqrfbVr6HgQ1OTSO0O+PspxbUoCGKhYNFWPkKG384T1dosb1umzIYyeEYyWwikSXBai0QBiWfbos5CgIsU6jKiC0H+NeOUt3URiN1UxKMsdc/mKsbyy3ntr3jaYbS5xSOCmJTVG4Lng1sgXIawiXwZJM+Thq0iSYIR5U9wwHFyyTXHN7SYgOMshkE3xh0ubY9VHPx+QK56X4qvRGdFD338hxB3IWEF/KVmhHaDCaADX5yr6r+XBE8YMBZ+RIFpCVKiLOT0fG2C2LohpsikNcu1/yNBiTeRTy5cbCa/45/H/v5IMYt4ihRCHWme+3yRZnnDKhfkNnhyMMtMqq60e0a1hB/AGdcF5u9CS+a6lAaF4D8attlAdhxvXDKqxdyzGFacALqhGR6q2f+tQxeiVqrb9VbOg5dRHdgBk7UFIlk3RjUPEOW3yLQuuVeJNMKNLaarT5J2zH3kfhJsAwYS7PxX0pXNIAu3rSgIRDCUQO8oQGJW6UlU2YO/6m4YeKhWCpbyjJHC/ux6o8IVYZpDIb1QfmytMPUgwDlV/T6pZhM5CCg7y/C3qt3BWnceGA= # DEPLOY_TEST_HOST
+  - secure: J5TIUSSVyxiTCm8fxpi4UOQsT0ODPjZg0q+VHdH9CHYHgkdcLWXqMLDMaK7fu8tgicrrAqFs1RV3iOdHFe9VT7YFCI1I47kLkNowoJxPQjveZ4IsBVl1tRwJHWWH87MAaC8jgCKca4tFfoMela81mCkUk1qo8ZV6bl+qMJbkYLwI5zrrvb5HdgPEw07M0uhGiMEVs1NW3aX9cby2mwKzsj8mUHb8L90tSoElRQtTHL8hNdT6NC3KyBDly94m5vCB8+iRgKarB/k7rGlc6zR7JkgR2u7lGEI/kCNPZHNuhilycK8N1ITxhjn79R6hC/d0mQhGraSpLgJy4BMnsVWSyF3ZLaVfzycOBHD9zpt22kHCb9by8S5fWa615v8nF2fKXIBwCyTaz77/zz47zXQKv3uKBg+Ivo6kkoKHIsANw6NFQNqPs8VCYOtGZxxGNZ6rKouNjiv3CC01RoNdiP4zkKLAv1PzAfQYIpcw9M5LnqGbNqulxp9Kp0SFNz2/6vwtQM/Hi8iYwVKOLaJ5vhGP8s6xXtzofF5NkS/+B7bb1ZaljqfbfOPGrRqkS0BZ8utxiAaDVU+3VOJWjTdwEFP1ubl/7MDJX02vmcvDqU6iL5HB2wkypMPlIXB+tqCb9MhR6TSpCz+QD7Wm9UVmO8JAthRX/ZP9woFZJbvmEg41H9s= # DEPLOY_PROD_USER
+  - secure: d9s9QwGPLHfEWnb/h9sh1FCeK2yYg0Hx1HM++evbzrzzqE16uF0A5V/JfqeXmzYEg5QY2iB6IlVvQGb3IJCceveIXKPYXa4Rta/m0QqQzCIdQv9i+pnlmdfJqRr0nM5dOJLEx3hGh1HdTcbM3RDDnjfwpkUX1ASUGhiuiwqtUk6f5Er/xYBfzVdxhKk+OnFv+ZIJuuvlNm/MqDL4L+3Cde+81SGj9JGzRMQAZ6k1Hr5gzABhXEOOLqxX1bU8Y+rWfc2yWZYLv6eFWOl8zwonbUSx5NXVEDC7GiGeopDzSTLZvhYAMGrkG0Nau4CSGCfB3xluUQWt65nN+9FqAo7JWzGMpHzxB6IfBo9JrJzbY6baZMQkFXbUmkdQUw7vz4CmDMbjgkDxkI/TVTFpndqpGgaC6NNdxEOsc6Nt0V5RPW+gGz2SARj6uEGv8opUS3wvrggpTh8zJcM+YV/tRafEozR0XYcSPFFZ+KjVWsrQoxgRbwRUhMUpV3KXP1KeMt3I69/Ya4l5M97fYrVKgqi+h+VwcmEXv/iZPfo6cfz3fQlN5AXQAUvV/z+VKJaem8cwUO/6yWEQZi/0x6tRAiJXYkfhYs23eWRyI36GGq8uSMf5zw6+YcbEJVG9wxRrZaHXzbNKoZ1Q/eTaiR2jtclDtS0m077v6Odggg7+nfc0akY= # DEPLOY_PROD_HOST

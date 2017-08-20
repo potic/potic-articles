@@ -1,0 +1,48 @@
+plugins {
+    id 'com.gradle.build-scan' version '1.8'
+
+    id 'groovy'
+
+    id 'org.springframework.boot' version '1.5.4.RELEASE'
+
+    id 'jacoco'
+
+    id 'idea'
+}
+
+version = '0.1-SNAPSHOT'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.1'
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all'
+
+    compile 'org.springframework.boot:spring-boot-starter-web'
+
+    compile 'org.slf4j:slf4j-api'
+    compile 'ch.qos.logback:logback-classic'
+
+    compile 'org.apache.commons:commons-lang3:3.5'
+}
+
+buildScan {
+    licenseAgreementUrl = 'https://gradle.com/terms-of-service'
+    licenseAgree = 'yes'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
+
+apply plugin: 'application'
+mainClassName = 'me.potic.articles.Application'
