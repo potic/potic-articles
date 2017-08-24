@@ -12,7 +12,7 @@ class MongoConfiguration extends AbstractMongoConfiguration {
 
     static String DATABASE_NAME = System.getenv('MONGO_DATABASE_NAME') ?: 'pocketSquare'
     static String AUTHENTICATION_DATABASE_NAME = System.getenv('MONGO_AUTH_DATABASE_NAME') ?: 'admin'
-    static String HOST = System.getenv('MONGO_HOST') ?: 'pocket-square-mongo'
+    static String HOST = System.getenv('MONGO_HOST') ?: '188.166.174.189'
     static Integer PORT = System.getenv('MONGO_PORT') ? Integer.parseInt(System.getenv('MONGO_PORT')) : 27017
     static String USERNAME = System.getenv('MONGO_USERNAME') ?: 'articlesService'
     static String PASSWORD = System.getenv('MONGO_PASSWORD')
