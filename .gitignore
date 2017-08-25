@@ -12,5 +12,6 @@ out/
 build/
 .gradle/
 
-# Runtime #
+# Development environment #
 logs/
+application-dev.properties

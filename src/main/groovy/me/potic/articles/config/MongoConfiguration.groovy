@@ -4,26 +4,50 @@ import com.mongodb.Mongo
 import com.mongodb.MongoClient
 import com.mongodb.MongoCredential
 import com.mongodb.ServerAddress
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration
 
 @Configuration
 class MongoConfiguration extends AbstractMongoConfiguration {
 
-    static String DATABASE_NAME = System.getenv('MONGO_DATABASE_NAME') ?: 'pocketSquare'
-    static String AUTHENTICATION_DATABASE_NAME = System.getenv('MONGO_AUTH_DATABASE_NAME') ?: 'admin'
-    static String HOST = System.getenv('MONGO_HOST') ?: '188.166.174.189'
-    static Integer PORT = System.getenv('MONGO_PORT') ? Integer.parseInt(System.getenv('MONGO_PORT')) : 27017
-    static String USERNAME = System.getenv('MONGO_USERNAME') ?: 'articlesService'
-    static String PASSWORD = System.getenv('MONGO_PASSWORD')
+    @Value(value = '${mongodb.databaseName}')
+    String databaseName
+
+    @Value(value = '${mongodb.authentication.databaseName}')
+    String authenticationDatabaseName
+
+    @Value(value = '${mongodb.host}')
+    String host
+
+    @Value(value = '${mongodb.port}')
+    Integer port
+
+    @Value(value = '${mongodb.username}')
+    String username
+
+    @Value(value = '${mongodb.password}')
+    String password
 
     @Override
     protected String getDatabaseName() {
-        DATABASE_NAME
+        databaseName
     }
 
     @Override
     Mongo mongo() throws Exception {
-        new MongoClient(new ServerAddress(HOST, PORT), [MongoCredential.createCredential(USERNAME, AUTHENTICATION_DATABASE_NAME, PASSWORD?.toCharArray()?:new char[0]) ])
+        new MongoClient( new ServerAddress(host, port), [MongoCredential.createCredential(username, authenticationDatabaseName, password())] )
+    }
+
+    char[] password() {
+        if (password != null) {
+            return password.toCharArray()
+        }
+
+        if (System.getenv('MONGO_PASSWORD') != null) {
+            return System.getenv('MONGO_PASSWORD').toCharArray()
+        }
+
+        return new char[0]
     }
 }
