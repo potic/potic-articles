@@ -26,7 +26,7 @@ class MongoConfiguration extends AbstractMongoConfiguration {
     @Value(value = '${mongodb.username}')
     String username
 
-    @Value(value = '${mongodb.password}')
+    @Value(value = '${mongodb.password:}')
     String password
 
     @Override
@@ -40,14 +40,10 @@ class MongoConfiguration extends AbstractMongoConfiguration {
     }
 
     char[] password() {
-        if (password != null) {
-            return password.toCharArray()
-        }
-
         if (System.getenv('MONGO_PASSWORD') != null) {
-            return System.getenv('MONGO_PASSWORD').toCharArray()
+            System.getenv('MONGO_PASSWORD').toCharArray()
+        } else {
+            password.toCharArray()
         }
-
-        return new char[0]
     }
 }
