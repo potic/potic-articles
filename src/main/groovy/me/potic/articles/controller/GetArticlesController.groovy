@@ -31,7 +31,7 @@ class GetArticlesController {
         if (cursorId == null) {
             unreadQuery = where('userId').is(userId).and('read').is(false)
         } else {
-            Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article)
+            Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
             unreadQuery = where('userId').is(userId).and('read').is(false).and('timeAdded').lt(cursorArticle.timeAdded)
         }
 
