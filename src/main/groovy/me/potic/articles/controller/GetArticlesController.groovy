@@ -22,14 +22,19 @@ class GetArticlesController {
     @GetMapping(path = '/article/byUserId/{userId}/unread')
     @ResponseBody Collection<Article> getUnreadByUserId(
             @PathVariable String userId,
-            @RequestParam('cursorId') String cursorId,
-            @RequestParam('count') Integer count,
+            @RequestParam(value = 'cursorId', required = false) String cursorId,
+            @RequestParam(value = 'count') Integer count,
             @RequestParam(value = 'minLength', required = false) Integer minLength,
             @RequestParam(value = 'maxLength', required = false) Integer maxLength
     ) {
-        Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article)
+        CriteriaDefinition unreadQuery
+        if (cursorId == null) {
+            unreadQuery = where('userId').is(userId).and('read').is(false)
+        } else {
+            Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article)
+            unreadQuery = where('userId').is(userId).and('read').is(false).and('timeAdded').lt(cursorArticle.timeAdded)
+        }
 
-        CriteriaDefinition unreadQuery = where('userId').is(userId).and('read').is(false).and('timeAdded').lt(cursorArticle.timeAdded)
         if (minLength != null) {
             unreadQuery = unreadQuery.and('wordCount').gt(minLength)
         }
@@ -37,7 +42,7 @@ class GetArticlesController {
             unreadQuery = unreadQuery.and('wordCount').lte(maxLength)
         }
 
-        mongoTemplate.find(
+        return mongoTemplate.find(
                 query(unreadQuery).with(new Sort(Sort.Direction.DESC, 'timeAdded')).limit(count),
                 Article
         )
