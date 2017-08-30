@@ -21,7 +21,7 @@ warn "Pulling latest docker image..."
 docker pull potic/potic-articles:$TAG_TO_DEPLOY
 
 warn "Starting docker image..."
-docker run -dit --name potic-articles -e LOG_PATH=/logs -v /logs:/logs -e MONGO_PASSWORD=$MONGO_PASSWORD -p 40402:8080 potic/potic-articles:$TAG_TO_DEPLOY
+docker run -dit --name potic-articles --link potic-pocket-api -e LOG_PATH=/logs -v /logs:/logs -e MONGO_PASSWORD=$MONGO_PASSWORD -p 40402:8080 potic/potic-articles:$TAG_TO_DEPLOY
 
 warn "Currently running docker images"
 docker ps -a
