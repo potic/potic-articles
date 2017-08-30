@@ -34,15 +34,13 @@ class UpdateArticlesController {
     @PostMapping(path = '/user/me/article/{articleId}/markAsRead')
     void markArticleAsReady(@PathVariable String articleId, final Principal principal) {
         String pocketSquareUserId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
-
         log.info "request to mark article $articleId as read for user $pocketSquareUserId"
 
-        mongoTemplate.updateFirst(query(where('id').is(articleId)), update('read', true), Article)
-
         Article readArticle = mongoTemplate.find(query(where('id').is(articleId)), Article).first()
-
         pocketApiRest.post {
             request.uri.path = "/archive/$pocketSquareUserId/${readArticle.pocketId}"
         }
+
+        mongoTemplate.updateFirst(query(where('id').is(articleId)), update('read', true), Article)
     }
 }
