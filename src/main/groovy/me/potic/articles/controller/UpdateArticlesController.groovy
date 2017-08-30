@@ -31,16 +31,18 @@ class UpdateArticlesController {
     HttpBuilder pocketApiRest
 
     @CrossOrigin
-    @PostMapping(path = '/article/{id}/markAsRead')
-    void markArticleAsReady(@PathVariable String id, final Principal principal) {
-        log.info "request to mark article #$id as read"
+    @PostMapping(path = '/user/me/article/{articleId}/markAsRead')
+    void markArticleAsReady(@PathVariable String articleId, final Principal principal) {
+        String pocketSquareUserId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
 
-        String pocketSquareId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
+        log.info "request to mark article $articleId as read for user $pocketSquareUserId"
 
-        mongoTemplate.updateFirst(query(where(id).is(id)), update('read', true), Article)
+        mongoTemplate.updateFirst(query(where('id').is(articleId)), update('read', true), Article)
+
+        Article readArticle = mongoTemplate.find(query(where('id').is(articleId)), Article).first()
 
         pocketApiRest.post {
-            request.uri.path = "/archive/$pocketSquareId/$id"
+            request.uri.path = "/archive/$pocketSquareUserId/${readArticle.pocketId}"
         }
     }
 }
