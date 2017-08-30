@@ -33,6 +33,8 @@ class UpdateArticlesController {
     @CrossOrigin
     @PostMapping(path = '/article/{id}/markAsRead')
     void markArticleAsReady(@PathVariable String id, final Principal principal) {
+        log.info "request to mark article #$id as read"
+
         String pocketSquareId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
 
         mongoTemplate.updateFirst(query(where(id).is(id)), update('read', true), Article)
