@@ -25,6 +25,7 @@ dependencies {
     compile 'org.codehaus.groovy:groovy-all'
 
     compile 'org.springframework.boot:spring-boot-starter-web'
+    compile 'org.springframework.boot:spring-boot-starter-actuator'
 
     compile 'org.springframework.data:spring-data-mongodb'
 
@@ -34,6 +35,8 @@ dependencies {
 
     compile 'org.slf4j:slf4j-api'
     compile 'ch.qos.logback:logback-classic'
+
+    compile 'io.dropwizard.metrics:metrics-core:3.2.4'
 
     compile 'org.apache.commons:commons-lang3:3.5'
 }

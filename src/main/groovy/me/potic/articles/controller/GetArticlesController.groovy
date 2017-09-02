@@ -1,28 +1,38 @@
 package me.potic.articles.controller
 
+import com.codahale.metrics.MetricRegistry
+import com.codahale.metrics.Timer
 import groovy.util.logging.Slf4j
 import me.potic.articles.domain.Article
+import me.potic.articles.service.ArticlesService
 import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Sort
-import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.query.CriteriaDefinition
 import org.springframework.web.bind.annotation.*
 
+import javax.annotation.PostConstruct
 import java.security.Principal
 
-import static org.springframework.data.mongodb.core.query.Criteria.where
-import static org.springframework.data.mongodb.core.query.Query.query
+import static com.codahale.metrics.MetricRegistry.name
 
 @RestController
 @Slf4j
 class GetArticlesController {
 
     @Autowired
-    MongoTemplate mongoTemplate
+    ArticlesService articlesService
 
     @Autowired
     UserService userService
+
+    @Autowired
+    MetricRegistry metricRegistry
+
+    Timer userUnreadArticlesTimer
+
+    @PostConstruct
+    void initMetrics() {
+        userUnreadArticlesTimer = metricRegistry.timer(name('request', 'user', 'me', 'article', 'unread'))
+    }
 
     @CrossOrigin
     @GetMapping(path = '/user/me/article/unread')
@@ -33,28 +43,15 @@ class GetArticlesController {
             @RequestParam(value = 'maxLength', required = false) Integer maxLength,
             final Principal principal
     ) {
-        String pocketSquareUserId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
+        final Timer.Context timerContext = userUnreadArticlesTimer.time()
+        log.info "receive request for /user/me/article/unread"
 
-        log.info "request to get unread articles for user $pocketSquareUserId"
-
-        CriteriaDefinition unreadQuery
-        if (cursorId == null) {
-            unreadQuery = where('userId').is(pocketSquareUserId).and('read').is(false)
-        } else {
-            Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
-            unreadQuery = where('userId').is(pocketSquareUserId).and('read').is(false).and('timeAdded').lt(cursorArticle.timeAdded)
+        try {
+            String pocketSquareUserId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
+            return articlesService.getUserUnreadArticles(pocketSquareUserId, cursorId, count, minLength, maxLength)
+        } finally {
+            long time = timerContext.stop()
+            log.info "request for /user/me/article/unread took ${time / 1_000_000}ms"
         }
-
-        if (minLength != null) {
-            unreadQuery = unreadQuery.and('wordCount').gt(minLength)
-        }
-        if (maxLength != null) {
-            unreadQuery = unreadQuery.and('wordCount').lte(maxLength)
-        }
-
-        return mongoTemplate.find(
-                query(unreadQuery).with(new Sort(Sort.Direction.DESC, 'timeAdded')).limit(count),
-                Article
-        )
     }
 }
