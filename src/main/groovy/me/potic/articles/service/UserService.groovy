@@ -2,7 +2,7 @@ package me.potic.articles.service
 
 import com.codahale.metrics.Counter
 import com.codahale.metrics.MetricRegistry
-import com.codahale.metrics.Timer
+import com.codahale.metrics.annotation.Timed
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
@@ -11,7 +11,6 @@ import groovyx.net.http.HttpBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
-import javax.annotation.PostConstruct
 import java.util.concurrent.TimeUnit
 
 import static com.codahale.metrics.MetricRegistry.name
@@ -23,18 +22,13 @@ class UserService {
     @Autowired
     HttpBuilder auth0Rest
 
+    Counter fetchPocketSquareIdTotalCount
+    Counter fetchPocketSquareIdAuth0Count
+
     @Autowired
-    MetricRegistry metricRegistry
-
-    Timer fetchPocketSquareIdByAuth0TokenTimer
-    Counter fetchPocketSquareIdTotalRequests
-    Counter fetchPocketSquareIdAuth0Requests
-
-    @PostConstruct
-    void initMetrics() {
-        fetchPocketSquareIdByAuth0TokenTimer = metricRegistry.timer(name('service', 'user', 'fetchPocketSquareIdByAuth0Token'))
-        fetchPocketSquareIdTotalRequests = metricRegistry.counter(name('service', 'user', 'fetchPocketSquareIdByAuth0Token', 'requests', 'total'))
-        fetchPocketSquareIdAuth0Requests = metricRegistry.counter(name('service', 'user', 'fetchPocketSquareIdByAuth0Token', 'requests', 'auth0'))
+    void initMetrics(MetricRegistry metricRegistry) {
+        fetchPocketSquareIdTotalCount = metricRegistry.counter(name(UserService, 'fetchPocketSquareIdByAuth0Token', 'count', 'total'))
+        fetchPocketSquareIdAuth0Count = metricRegistry.counter(name(UserService, 'fetchPocketSquareIdByAuth0Token', 'count', 'auth0'))
     }
 
     LoadingCache<String, String> cachedPocketSquareId = CacheBuilder.newBuilder()
@@ -49,29 +43,34 @@ class UserService {
                 }
             )
 
+    @Timed(name = 'fetchPocketSquareIdByAuth0Token')
     String fetchPocketSquareIdByAuth0Token(String auth0Token) {
-        final Timer.Context timerContext = fetchPocketSquareIdByAuth0TokenTimer.time()
-        log.info "fetching user pocketSquareId by auth0 token"
-        fetchPocketSquareIdTotalRequests.inc()
+        log.info 'fetching user pocketSquareId by auth0 token'
+        fetchPocketSquareIdTotalCount.inc()
 
         try {
             return cachedPocketSquareId.get(auth0Token)
-        } finally {
-            long time = timerContext.stop()
-            log.info "fetching user pocketSquareId by auth0 token took ${time / 1_000_000}ms"
+        } catch (e) {
+            log.error "fetching user pocketSquareId by auth0 token failed: $e.message", e
+            throw e
         }
     }
 
     String doAuth0RequestForPocketSquareId(String auth0Token) {
-        log.info "performing auth0 request to get user pocketSquareId by auth0 token"
-        fetchPocketSquareIdAuth0Requests.inc()
+        log.info 'performing auth0 request to get user pocketSquareId by auth0 token'
+        fetchPocketSquareIdAuth0Count.inc()
 
-        def authResult = auth0Rest.get {
-            request.uri.path = '/userinfo'
-            request.headers['Authorization'] = 'Bearer ' + auth0Token
+        try {
+            def authResult = auth0Rest.get {
+                request.uri.path = '/userinfo'
+                request.headers['Authorization'] = 'Bearer ' + auth0Token
+            }
+
+            return authResult['https://potic.me/pocketSquareId']
+        } catch (e) {
+            log.error "performing auth0 request to get user pocketSquareId by auth0 token failed: $e.message", e
+            throw e
         }
-
-        return authResult['https://potic.me/pocketSquareId']
     }
 }
 
