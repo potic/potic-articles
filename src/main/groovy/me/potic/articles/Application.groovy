@@ -42,7 +42,7 @@ class Application {
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .build()
-        reporter.start(1, TimeUnit.MINUTES)
+        reporter.start(1, TimeUnit.HOURS)
 
         return reporter
     }
