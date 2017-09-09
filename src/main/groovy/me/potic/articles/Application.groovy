@@ -25,13 +25,6 @@ class Application {
     }
 
     @Bean
-    HttpBuilder pocketApiRest(@Value('${services.pockerApi.url}') String pocketApiServiceUrl) {
-        HttpBuilder.configure {
-            request.uri = pocketApiServiceUrl
-        }
-    }
-
-    @Bean
     Reporter slf4jMetricsReporter(MetricRegistry metricRegistry) {
         final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
                 .outputTo(LoggerFactory.getLogger('me.potic.articles.metrics'))

@@ -1,6 +1,7 @@
 package me.potic.articles
 
 import com.mongodb.Mongo
+import com.stehno.ersatz.ErsatzServer
 import me.potic.articles.domain.Article
 import me.potic.articles.service.ArticlesService
 import org.junit.Rule
@@ -12,6 +13,10 @@ import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.containers.GenericContainer
 import spock.lang.IgnoreIf
 import spock.lang.Specification
+
+import static org.hamcrest.Matchers.equalTo
+import static org.springframework.data.mongodb.core.query.Criteria.where
+import static org.springframework.data.mongodb.core.query.Query.query
 
 @IgnoreIf({ os.windows })
 @SpringBootTest
@@ -27,17 +32,19 @@ class ArticlesServiceIntegrationTest extends Specification {
     @Rule
     GenericContainer mongodb = new GenericContainer('mongo:3.4.1').withExposedPorts(27017)
 
+    MongoTemplate mongoTemplate
+
     def setup() {
-        MongoTemplate mongoTemplate = new MongoTemplate(new Mongo(mongodb.containerIpAddress, mongodb.getMappedPort(27017)), databaseName)
+        mongoTemplate = new MongoTemplate(new Mongo(mongodb.containerIpAddress, mongodb.getMappedPort(27017)), databaseName)
         articlesService.mongoTemplate = mongoTemplate
 
         List articles = [
-                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').read(false).wordCount(100).timeAdded(1).build(),
-                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').read(false).wordCount(200).timeAdded(2).build(),
-                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').read(false).wordCount(300).timeAdded(3).build(),
-                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').read(true).wordCount(100).timeAdded(4).build(),
-                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').read(false).wordCount(200).timeAdded(5).build(),
-                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').read(true).wordCount(100).timeAdded(6).build()
+                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').pocketId('POCKET_1').read(false).wordCount(100).timeAdded(1).build(),
+                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').pocketId('POCKET_2').read(false).wordCount(200).timeAdded(2).build(),
+                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').pocketId('POCKET_3').read(false).wordCount(300).timeAdded(3).build(),
+                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').pocketId('POCKET_4').read(true).wordCount(100).timeAdded(4).build(),
+                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').pocketId('POCKET_5').read(false).wordCount(200).timeAdded(5).build(),
+                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').pocketId('POCKET_6').read(true).wordCount(100).timeAdded(6).build()
         ]
         mongoTemplate.insert(articles, Article)
     }
@@ -152,5 +159,65 @@ class ArticlesServiceIntegrationTest extends Specification {
             wordCount == 200
             timeAdded == 2
         }
+    }
+
+    def 'void markArticleAsRead(String pocketSquareUserId, String articleId)'() {
+        setup: 'mock server instead of actual potic-pocket-api'
+        ErsatzServer ersatz = new ErsatzServer()
+        ersatz.expectations {
+            post('/archive/TEST_USER_1/POCKET_2') {
+                called equalTo(1)
+                responder {
+                    content 'OK','plain/text'
+                }
+            }
+        }
+        ersatz.start()
+
+        and: 'instruct service to use mock server'
+        articlesService.pocketApiRest(ersatz.httpUrl)
+
+        when: 'mark article as read'
+        articlesService.markArticleAsRead('TEST_USER_1', 'TEST_ARTICLE_2')
+
+        then: 'record in mongodb is updated'
+        Article actual = mongoTemplate.find(query(where('id').is('TEST_ARTICLE_2')), Article).first()
+        actual.read == true
+
+        and: 'mock server received expected calls'
+        ersatz.verify()
+
+        cleanup: 'stop mock server'
+        ersatz.stop()
+    }
+
+    def 'void markArticleAsRead(String pocketSquareUserId, String articleId) - call to potic-pocket-api failed'() {
+        setup: 'mock server that fails to answer requests instead of actual potic-pocket-api'
+        ErsatzServer ersatz = new ErsatzServer()
+        ersatz.expectations {
+            post('/archive/TEST_USER_1/POCKET_2') {
+                called equalTo(1)
+                responder {
+                    code(500)
+                }
+            }
+        }
+        ersatz.start()
+
+        and: 'instruct service to use mock server'
+        articlesService.pocketApiRest(ersatz.httpUrl)
+
+        when: 'mark article as read'
+        articlesService.markArticleAsRead('TEST_USER_1', 'TEST_ARTICLE_2')
+
+        then: 'record in mongodb is not updated'
+        Article actual = mongoTemplate.find(query(where('id').is('TEST_ARTICLE_2')), Article).first()
+        actual.read == false
+
+        and: 'mock server received expected calls'
+        ersatz.verify()
+
+        cleanup: 'stop mock server'
+        ersatz.stop()
     }
 }

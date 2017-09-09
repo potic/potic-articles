@@ -5,6 +5,7 @@ import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
 import me.potic.articles.domain.Article
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.CriteriaDefinition
@@ -21,8 +22,14 @@ class ArticlesService {
     @Autowired
     MongoTemplate mongoTemplate
 
-    @Autowired
     HttpBuilder pocketApiRest
+
+    @Autowired
+    HttpBuilder pocketApiRest(@Value('${services.pockerApi.url}') String pocketApiServiceUrl) {
+        pocketApiRest = HttpBuilder.configure {
+            request.uri = pocketApiServiceUrl
+        }
+    }
 
     @Timed(name = 'getUserUnreadArticles')
     List<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
