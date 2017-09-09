@@ -5,6 +5,7 @@ import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
 import me.potic.articles.domain.Article
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.CriteriaDefinition
@@ -21,11 +22,17 @@ class ArticlesService {
     @Autowired
     MongoTemplate mongoTemplate
 
-    @Autowired
     HttpBuilder pocketApiRest
 
+    @Autowired
+    HttpBuilder pocketApiRest(@Value('${services.pockerApi.url}') String pocketApiServiceUrl) {
+        pocketApiRest = HttpBuilder.configure {
+            request.uri = pocketApiServiceUrl
+        }
+    }
+
     @Timed(name = 'getUserUnreadArticles')
-    Collection<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
+    List<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
         log.info "getting $count unread articles for user $pocketSquareUserId starting from $cursorId with length between $minLength and $maxLength"
 
         try {
@@ -37,10 +44,11 @@ class ArticlesService {
                 unreadQuery = where('userId').is(pocketSquareUserId).and('read').is(false).and('timeAdded').lt(cursorArticle.timeAdded)
             }
 
-            if (minLength != null) {
+            if (minLength != null && maxLength != null) {
+                unreadQuery = unreadQuery.andOperator(where('wordCount').gt(minLength), where('wordCount').lte(maxLength))
+            } else if (minLength != null) {
                 unreadQuery = unreadQuery.and('wordCount').gt(minLength)
-            }
-            if (maxLength != null) {
+            } else if (maxLength != null) {
                 unreadQuery = unreadQuery.and('wordCount').lte(maxLength)
             }
 
@@ -50,7 +58,7 @@ class ArticlesService {
             )
         } catch (e) {
             log.error "getting $count unread articles for user $pocketSquareUserId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e
-            throw e
+            throw new RuntimeException("getting $count unread articles for user $pocketSquareUserId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e)
         }
     }
 
@@ -67,7 +75,7 @@ class ArticlesService {
             mongoTemplate.updateFirst(query(where('id').is(articleId)), update('read', true), Article)
         } catch (e) {
             log.error "marking article $articleId as read for user $pocketSquareUserId failed: $e.message", e
-            throw e
+            throw new RuntimeException("marking article $articleId as read for user $pocketSquareUserId failed: $e.message", e)
         }
     }
 }
