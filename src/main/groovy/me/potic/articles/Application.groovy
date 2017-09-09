@@ -10,10 +10,12 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.PropertySource
 
 import java.util.concurrent.TimeUnit
 
 @EnableMetrics(proxyTargetClass = true)
+@PropertySource('classpath:mongodb.properties')
 @SpringBootApplication
 class Application {
 

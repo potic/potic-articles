@@ -25,7 +25,7 @@ class ArticlesService {
     HttpBuilder pocketApiRest
 
     @Timed(name = 'getUserUnreadArticles')
-    Collection<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
+    List<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
         log.info "getting $count unread articles for user $pocketSquareUserId starting from $cursorId with length between $minLength and $maxLength"
 
         try {
@@ -50,7 +50,7 @@ class ArticlesService {
             )
         } catch (e) {
             log.error "getting $count unread articles for user $pocketSquareUserId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e
-            throw e
+            throw new RuntimeException("getting $count unread articles for user $pocketSquareUserId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e)
         }
     }
 
@@ -67,7 +67,7 @@ class ArticlesService {
             mongoTemplate.updateFirst(query(where('id').is(articleId)), update('read', true), Article)
         } catch (e) {
             log.error "marking article $articleId as read for user $pocketSquareUserId failed: $e.message", e
-            throw e
+            throw new RuntimeException("marking article $articleId as read for user $pocketSquareUserId failed: $e.message", e)
         }
     }
 }

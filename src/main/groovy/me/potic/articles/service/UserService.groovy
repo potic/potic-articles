@@ -62,7 +62,6 @@ class UserService {
                 )
     }
 
-    @Timed(name = 'fetchPocketSquareIdByAuth0Token')
     String fetchPocketSquareIdByAuth0Token(String auth0Token) {
         log.info 'fetching user pocketSquareId by auth0 token'
         fetchPocketSquareIdTotalCount.inc()
@@ -75,6 +74,7 @@ class UserService {
         }
     }
 
+    @Timed(name = 'doAuth0RequestForPocketSquareId')
     String doAuth0RequestForPocketSquareId(String auth0Token) {
         log.info 'performing auth0 request to get user pocketSquareId by auth0 token'
         fetchPocketSquareIdAuth0Count.inc()
