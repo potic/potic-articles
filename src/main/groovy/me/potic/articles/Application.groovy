@@ -5,17 +5,18 @@ import com.codahale.metrics.Reporter
 import com.codahale.metrics.Slf4jReporter
 import com.ryantenney.metrics.spring.config.annotation.EnableMetrics
 import groovyx.net.http.HttpBuilder
+import me.potic.articles.config.MongoDevConfiguration
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.PropertySource
+import org.springframework.context.annotation.Import
 
 import java.util.concurrent.TimeUnit
 
 @EnableMetrics(proxyTargetClass = true)
-@PropertySource('classpath:mongodb.properties')
+@Import(MongoDevConfiguration)
 @SpringBootApplication
 class Application {
 
