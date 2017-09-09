@@ -211,7 +211,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         articlesService.markArticleAsRead('TEST_USER_1', 'TEST_ARTICLE_2')
 
         then: 'exception is thrown'
-        def exception = thrown()
+        thrown(RuntimeException)
 
         and: 'record in mongodb is not updated'
         Article actual = mongoTemplate.find(query(where('id').is('TEST_ARTICLE_2')), Article).first()
