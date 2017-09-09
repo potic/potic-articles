@@ -37,10 +37,11 @@ class ArticlesService {
                 unreadQuery = where('userId').is(pocketSquareUserId).and('read').is(false).and('timeAdded').lt(cursorArticle.timeAdded)
             }
 
-            if (minLength != null) {
+            if (minLength != null && maxLength != null) {
+                unreadQuery = unreadQuery.andOperator(where('wordCount').gt(minLength), where('wordCount').lte(maxLength))
+            } else if (minLength != null) {
                 unreadQuery = unreadQuery.and('wordCount').gt(minLength)
-            }
-            if (maxLength != null) {
+            } else if (maxLength != null) {
                 unreadQuery = unreadQuery.and('wordCount').lte(maxLength)
             }
 

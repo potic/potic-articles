@@ -50,7 +50,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         articles.size() == 3
 
         with(articles[0]) {
-            id == 'TEST_ARTICLE_3___________'
+            id == 'TEST_ARTICLE_3'
             userId == 'TEST_USER_1'
             read == false
             wordCount == 300
@@ -92,7 +92,7 @@ class ArticlesServiceIntegrationTest extends Specification {
 
     def 'Collection<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, minLength = null, maxLength = null)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', 2, 1, null, null)
+        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', 'TEST_ARTICLE_2', 1, null, null)
 
         then:
         articles.size() == 1
