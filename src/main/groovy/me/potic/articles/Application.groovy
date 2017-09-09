@@ -29,13 +29,6 @@ class Application {
     }
 
     @Bean
-    HttpBuilder auth0Rest(@Value('${services.auth0.url}') String auth0ServiceUrl) {
-        HttpBuilder.configure {
-            request.uri = auth0ServiceUrl
-        }
-    }
-
-    @Bean
     Reporter slf4jMetricsReporter(MetricRegistry metricRegistry) {
         final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
                 .outputTo(LoggerFactory.getLogger('me.potic.articles.metrics'))
