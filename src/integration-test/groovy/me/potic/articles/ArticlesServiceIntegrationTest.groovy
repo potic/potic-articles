@@ -210,7 +210,10 @@ class ArticlesServiceIntegrationTest extends Specification {
         when: 'mark article as read'
         articlesService.markArticleAsRead('TEST_USER_1', 'TEST_ARTICLE_2')
 
-        then: 'record in mongodb is not updated'
+        then: 'exception is thrown'
+        def exception = thrown()
+
+        and: 'record in mongodb is not updated'
         Article actual = mongoTemplate.find(query(where('id').is('TEST_ARTICLE_2')), Article).first()
         actual.read == false
 
