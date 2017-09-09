@@ -5,12 +5,14 @@ import com.stehno.ersatz.ErsatzServer
 import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
 import static org.hamcrest.Matchers.equalTo
 import static java.util.concurrent.TimeUnit.*
 
 @SpringBootTest
+@ActiveProfiles('integrationTest')
 class UserServiceIntegrationTest extends Specification {
 
     @Autowired
