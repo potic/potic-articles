@@ -10,7 +10,8 @@ plugins {
     id 'idea'
 }
 
-version = '0.1-SNAPSHOT'
+baseVersion = new File('VERSION').text
+version = "${baseVersion}${project.hasProperty('patchVersion') ? '.' + patchVersion : ''}${project.hasProperty('labelVersion') ? '-' + labelVersion : ''}"
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.1'
