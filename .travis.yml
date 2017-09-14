@@ -20,7 +20,7 @@ before_install:
 - chmod +x gradlew
 
 install:
-- ./gradlew build jacocoTestReport --scan -PpatchVersion=$TRAVIS_BUILD_NUMBER
+- "./gradlew build jacocoTestReport --scan -PpatchVersion=$TRAVIS_BUILD_NUMBER"
 
 after_success:
 - bash <(curl -s https://codecov.io/bash)

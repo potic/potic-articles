@@ -37,7 +37,7 @@ class GetArticlesController {
             return articlesService.getUserUnreadArticles(pocketSquareUserId, cursorId, count, minLength, maxLength)
         } catch (e) {
             log.error "request for /user/me/article/unread failed: $e.message", e
-            throw e
+            throw new RuntimeException("request for /user/me/article/unread failed: $e.message", e)
         }
     }
 }

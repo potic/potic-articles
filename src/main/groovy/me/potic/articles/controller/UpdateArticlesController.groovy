@@ -33,7 +33,7 @@ class UpdateArticlesController {
             articlesService.markArticleAsRead(pocketSquareUserId, articleId)
         } catch (e) {
             log.error "request for /user/me/$articleId/markAsRead failed: $e.message", e
-            throw e
+            throw new RuntimeException("request for /user/me/$articleId/markAsRead failed: $e.message", e)
         }
     }
 }
