@@ -25,7 +25,7 @@ class ArticlesService {
     HttpBuilder pocketApiRest
 
     @Autowired
-    HttpBuilder pocketApiRest(@Value('${services.pockerApi.url}') String pocketApiServiceUrl) {
+    HttpBuilder pocketApiRest(@Value('${services.pocketApi.url}') String pocketApiServiceUrl) {
         pocketApiRest = HttpBuilder.configure {
             request.uri = pocketApiServiceUrl
         }
