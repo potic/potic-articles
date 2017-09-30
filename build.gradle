@@ -47,7 +47,7 @@ dependencies {
 
     compile 'com.auth0:auth0-spring-security-api:1.0.0-rc.3'
 
-    compile 'io.github.http-builder-ng:http-builder-ng-core:0.17.0'
+    compile 'io.github.http-builder-ng:http-builder-ng-core:1.0.0'
 
     compile 'org.slf4j:slf4j-api'
     compile 'ch.qos.logback:logback-classic'

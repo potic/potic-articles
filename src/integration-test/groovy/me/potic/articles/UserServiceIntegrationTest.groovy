@@ -2,6 +2,7 @@ package me.potic.articles
 
 import com.google.common.base.Ticker
 import com.stehno.ersatz.ErsatzServer
+import me.potic.articles.service.Auth0Service
 import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -18,110 +19,161 @@ class UserServiceIntegrationTest extends Specification {
     @Autowired
     UserService userService
 
-    def 'String fetchPocketSquareIdByAuth0Token(String auth0Token)'(){
-        setup: 'mock server instead of actual Auth0'
-        ErsatzServer ersatz = new ErsatzServer()
-        ersatz.expectations {
+    @Autowired
+    Auth0Service auth0Service
+
+    def 'String findUserIdByAuth0Token(String auth0Token)'(){
+        setup: 'mock servers'
+        ErsatzServer ersatzAuth0 = new ErsatzServer()
+        ersatzAuth0.expectations {
             get('/userinfo') {
                 called equalTo(1)
                 header 'Authorization', equalTo('Bearer TEST_TOKEN_28')
                 responder {
-                    content '{"sub":"google-oauth2","name":"Yaroslav Yermilov","https://potic.me/pocketSquareId":"POCKET_SQUARE_ID_28"}','application/json'
+                    content '{"sub":"google-oauth2|28","name":"Yaroslav Yermilov"}','application/json'
                 }
             }
         }
-        ersatz.start()
+        ersatzAuth0.start()
+
+        ErsatzServer ersatzUsersService = new ErsatzServer()
+        ersatzUsersService.expectations {
+            get('/user/search?socialId=google-oauth2|28') {
+                called equalTo(1)
+                header 'Authorization', equalTo('Bearer TEST_TOKEN_28')
+                responder {
+                    content '{"socialId":"google-oauth2|28","name":"Yaroslav Yermilov","id":"USER_ID_28"}','application/json'
+                }
+            }
+        }
+        ersatzUsersService.start()
 
         and: 'instruct service to use mock server'
-        userService.auth0Rest(ersatz.httpUrl)
+        userService.usersServiceRest(ersatzUsersService.httpUrl)
+        auth0Service.auth0Rest(ersatzAuth0.httpUrl)
+        userService.auth0Service = auth0Service
 
-        when: 'fetch pocketSquareId by auth0 token'
-        String actualPocketSquareId = userService.fetchPocketSquareIdByAuth0Token('TEST_TOKEN_28')
+        when: 'find userId by auth0 token'
+        String actualUserId = userService.findUserIdByAuth0Token('TEST_TOKEN_28')
 
         then: 'expected token is returned'
-        actualPocketSquareId == 'POCKET_SQUARE_ID_28'
+        actualUserId == 'USER_ID_28'
 
         and: 'mock server received expected calls'
-        ersatz.verify()
+        ersatzAuth0.verify()
+        ersatzUsersService.verify()
 
         cleanup: 'stop mock server'
-        ersatz.stop()
+        ersatzAuth0.stop()
+        ersatzUsersService.stop()
     }
 
-    def 'String fetchPocketSquareIdByAuth0Token(String auth0Token) - results are cached'(){
-        setup: 'mock server instead of actual Auth0'
-        ErsatzServer ersatz = new ErsatzServer()
-        ersatz.expectations {
+    def 'String findUserIdByAuth0Token(String auth0Token) - results are cached'(){
+        setup: 'mock servers'
+        ErsatzServer ersatzAuth0 = new ErsatzServer()
+        ersatzAuth0.expectations {
             get('/userinfo') {
                 called equalTo(1)
                 header 'Authorization', equalTo('Bearer TEST_TOKEN_43')
                 responder {
-                    content '{"sub":"google-oauth2","name":"Yaroslav Yermilov","https://potic.me/pocketSquareId":"POCKET_SQUARE_ID_43"}','application/json'
+                    content '{"sub":"google-oauth2|43","name":"Yaroslav Yermilov"}','application/json'
                 }
             }
         }
-        ersatz.start()
+        ersatzAuth0.start()
+
+        ErsatzServer ersatzUsersService = new ErsatzServer()
+        ersatzUsersService.expectations {
+            get('/user/search?socialId=google-oauth2|43') {
+                called equalTo(1)
+                header 'Authorization', equalTo('Bearer TEST_TOKEN_43')
+                responder {
+                    content '{"socialId":"google-oauth2|43","name":"Yaroslav Yermilov","id":"USER_ID_43"}','application/json'
+                }
+            }
+        }
+        ersatzUsersService.start()
 
         and: 'instruct service to use mock server'
-        userService.auth0Rest(ersatz.httpUrl)
+        userService.usersServiceRest(ersatzUsersService.httpUrl)
+        auth0Service.auth0Rest(ersatzAuth0.httpUrl)
+        userService.auth0Service = auth0Service
 
-        when: 'fetch pocketSquareId by auth0 token first time'
-        String actualPocketSquareId1 = userService.fetchPocketSquareIdByAuth0Token('TEST_TOKEN_43')
-
-        then: 'expected token is returned'
-        actualPocketSquareId1 == 'POCKET_SQUARE_ID_43'
-
-        when: 'fetch pocketSquareId by auth0 token second time'
-        String actualPocketSquareId2 = userService.fetchPocketSquareIdByAuth0Token('TEST_TOKEN_43')
+        when: 'fetch userId by auth0 token first time'
+        String actualUserId1 = userService.findUserIdByAuth0Token('TEST_TOKEN_43')
 
         then: 'expected token is returned'
-        actualPocketSquareId2 == 'POCKET_SQUARE_ID_43'
+        actualUserId1 == 'USER_ID_43'
+
+        when: 'fetch userId by auth0 token second time'
+        String actualUserId2 = userService.findUserIdByAuth0Token('TEST_TOKEN_43')
+
+        then: 'expected token is returned'
+        actualUserId2 == 'USER_ID_43'
 
         and: 'mock server received expected calls'
-        ersatz.verify()
+        ersatzAuth0.verify()
+        ersatzUsersService.verify()
 
         cleanup: 'stop mock server'
-        ersatz.stop()
+        ersatzAuth0.stop()
+        ersatzUsersService.stop()
     }
 
-    def 'String fetchPocketSquareIdByAuth0Token(String auth0Token) - cached results are expiring'(){
-        setup: 'mock server instead of actual Auth0'
-        ErsatzServer ersatz = new ErsatzServer()
-        ersatz.expectations {
+    def 'String findUserIdByAuth0Token(String auth0Token) - cached results are expiring'(){
+        setup: 'mock servers'
+        ErsatzServer ersatzAuth0 = new ErsatzServer()
+        ersatzAuth0.expectations {
             get('/userinfo') {
                 called equalTo(2)
                 header 'Authorization', equalTo('Bearer TEST_TOKEN_17')
                 responder {
-                    content '{"sub":"google-oauth2","name":"Yaroslav Yermilov","https://potic.me/pocketSquareId":"POCKET_SQUARE_ID_17"}','application/json'
+                    content '{"sub":"google-oauth2|17","name":"Yaroslav Yermilov"}','application/json'
                 }
             }
         }
-        ersatz.start()
+        ersatzAuth0.start()
+
+        ErsatzServer ersatzUsersService = new ErsatzServer()
+        ersatzUsersService.expectations {
+            get('/user/search?socialId=google-oauth2|17') {
+                called equalTo(2)
+                header 'Authorization', equalTo('Bearer TEST_TOKEN_17')
+                responder {
+                    content '{"socialId":"google-oauth2|17","name":"Yaroslav Yermilov","id":"USER_ID_17"}','application/json'
+                }
+            }
+        }
+        ersatzUsersService.start()
 
         and: 'instruct service to use mock server'
-        userService.auth0Rest(ersatz.httpUrl)
+        userService.usersServiceRest(ersatzUsersService.httpUrl)
+        auth0Service.auth0Rest(ersatzAuth0.httpUrl)
+        userService.auth0Service = auth0Service
 
         and: 'instruct service to use mock time'
         Ticker ticker = Mock()
         ticker.read() >>> [ 0L, 0L, NANOSECONDS.convert(2, DAYS) ]
-        userService.cachedPocketSquareId(ticker)
+        userService.cachedUserIds(ticker)
 
-        when: 'fetch pocketSquareId by auth0 token first time'
-        String actualPocketSquareId1 = userService.fetchPocketSquareIdByAuth0Token('TEST_TOKEN_17')
-
-        then: 'expected token is returned'
-        actualPocketSquareId1 == 'POCKET_SQUARE_ID_17'
-
-        when: 'two days passed, fetch pocketSquareId by auth0 token second time'
-        String actualPocketSquareId2 = userService.fetchPocketSquareIdByAuth0Token('TEST_TOKEN_17')
+        when: 'fetch userId by auth0 token first time'
+        String actualUserId1 = userService.findUserIdByAuth0Token('TEST_TOKEN_17')
 
         then: 'expected token is returned'
-        actualPocketSquareId2 == 'POCKET_SQUARE_ID_17'
+        actualUserId1 == 'USER_ID_17'
+
+        when: 'two days passed, fetch userId by auth0 token second time'
+        String actualUserId2 = userService.findUserIdByAuth0Token('TEST_TOKEN_17')
+
+        then: 'expected token is returned'
+        actualUserId2 == 'USER_ID_17'
 
         and: 'mock server received expected calls'
-        ersatz.verify()
+        ersatzAuth0.verify()
+        ersatzUsersService.verify()
 
         cleanup: 'stop mock server'
-        ersatz.stop()
+        ersatzAuth0.stop()
+        ersatzUsersService.stop()
     }
 }

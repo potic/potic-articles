@@ -1,7 +1,6 @@
 package me.potic.articles.service
 
-import com.codahale.metrics.Counter
-import com.codahale.metrics.MetricRegistry
+import com.codahale.metrics.annotation.Counted
 import com.codahale.metrics.annotation.Timed
 import com.google.common.base.Ticker
 import com.google.common.cache.CacheBuilder
@@ -16,39 +15,31 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 import java.util.concurrent.TimeUnit
 
-import static com.codahale.metrics.MetricRegistry.name
-
 @Service
 @Slf4j
 class UserService {
 
-    HttpBuilder auth0Rest
+    @Autowired
+    Auth0Service auth0Service
 
-    LoadingCache<String, String> cachedPocketSquareId
+    HttpBuilder usersServiceRest
 
-    Counter fetchPocketSquareIdTotalCount
-    Counter fetchPocketSquareIdAuth0Count
+    LoadingCache<String, String> cachedUserIds
 
     @Autowired
-    void initMetrics(MetricRegistry metricRegistry) {
-        fetchPocketSquareIdTotalCount = metricRegistry.counter(name(UserService, 'fetchPocketSquareIdByAuth0Token', 'count', 'total'))
-        fetchPocketSquareIdAuth0Count = metricRegistry.counter(name(UserService, 'fetchPocketSquareIdByAuth0Token', 'count', 'auth0'))
-    }
-
-    @Autowired
-    HttpBuilder auth0Rest(@Value('${services.auth0.url}') String auth0ServiceUrl) {
-        auth0Rest = HttpBuilder.configure {
-            request.uri = auth0ServiceUrl
+    HttpBuilder usersServiceRest(@Value('${services.users.url}') String usersServiceUrl) {
+        usersServiceRest = HttpBuilder.configure {
+            request.uri = usersServiceUrl
         }
     }
 
     @PostConstruct
-    void initCachedPocketSquareId() {
-        cachedPocketSquareId(Ticker.systemTicker())
+    void initCachedUserIds() {
+        cachedUserIds(Ticker.systemTicker())
     }
 
-    LoadingCache<String, String> cachedPocketSquareId(Ticker ticker) {
-        cachedPocketSquareId = CacheBuilder.newBuilder()
+    LoadingCache<String, String> cachedUserIds(Ticker ticker) {
+        cachedUserIds = CacheBuilder.newBuilder()
                 .expireAfterWrite(1, TimeUnit.DAYS)
                 .ticker(ticker)
                 .build(
@@ -56,39 +47,41 @@ class UserService {
 
                             @Override
                             String load(String auth0Token) {
-                                doAuth0RequestForPocketSquareId(auth0Token)
+                                fetchUserIdByAuth0Token(auth0Token)
                             }
                         }
                 )
     }
 
-    String fetchPocketSquareIdByAuth0Token(String auth0Token) {
-        log.info 'fetching user pocketSquareId by auth0 token'
-        fetchPocketSquareIdTotalCount.inc()
+    @Counted(name = 'findUserIdByAuth0Token.total')
+    String findUserIdByAuth0Token(String auth0Token) {
+        log.info 'finding user id by auth0 token'
 
         try {
-            return cachedPocketSquareId.get(auth0Token)
+            return cachedUserIds.get(auth0Token)
         } catch (e) {
-            log.error "fetching user pocketSquareId by auth0 token failed: $e.message", e
-            throw new RuntimeException('fetching user pocketSquareId by auth0 token failed', e)
+            log.error "finding user id by auth0 token failed: $e.message", e
+            throw new RuntimeException('finding user id by auth0 token failed', e)
         }
     }
 
-    @Timed(name = 'doAuth0RequestForPocketSquareId')
-    String doAuth0RequestForPocketSquareId(String auth0Token) {
-        log.info 'performing auth0 request to get user pocketSquareId by auth0 token'
-        fetchPocketSquareIdAuth0Count.inc()
+    @Counted(name = 'findUserIdByAuth0Token.cacheMiss')
+    @Timed(name = 'fetchUserIdByAuth0Token')
+    String fetchUserIdByAuth0Token(String auth0Token) {
+        log.info 'fetching user id by auth0 token'
 
         try {
-            def authResult = auth0Rest.get {
-                request.uri.path = '/userinfo'
+            String socialId = auth0Service.getSocialId(auth0Token)
+
+            def user = usersServiceRest.get {
+                request.uri.path = "/user/search?socialId=$socialId"
                 request.headers['Authorization'] = 'Bearer ' + auth0Token
             }
 
-            return authResult['https://potic.me/pocketSquareId']
+            return user['id']
         } catch (e) {
-            log.error "performing auth0 request to get user pocketSquareId by auth0 token failed: $e.message", e
-            throw new RuntimeException('performing auth0 request to get user pocketSquareId by auth0 token failed', e)
+            log.error "fetching user id by auth0 token failed: $e.message", e
+            throw new RuntimeException('fetching user id by auth0 token failed', e)
         }
     }
 }

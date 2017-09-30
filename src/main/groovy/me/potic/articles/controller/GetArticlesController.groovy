@@ -33,8 +33,8 @@ class GetArticlesController {
         log.info 'receive request for /user/me/article/unread'
 
         try {
-            String pocketSquareUserId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
-            return articlesService.getUserUnreadArticles(pocketSquareUserId, cursorId, count, minLength, maxLength)
+            String userId = userService.findUserIdByAuth0Token(principal.token)
+            return articlesService.getUserUnreadArticles(userId, cursorId, count, minLength, maxLength)
         } catch (e) {
             log.error "request for /user/me/article/unread failed: $e.message", e
             throw new RuntimeException("request for /user/me/article/unread failed: $e.message", e)

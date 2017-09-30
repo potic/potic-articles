@@ -29,8 +29,8 @@ class UpdateArticlesController {
         log.info "receive request for /user/me/$articleId/markAsRead"
 
         try {
-            String pocketSquareUserId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
-            articlesService.markArticleAsRead(pocketSquareUserId, articleId)
+            String userId = userService.findUserIdByAuth0Token(principal.token)
+            articlesService.markArticleAsRead(userId, articleId)
         } catch (e) {
             log.error "request for /user/me/$articleId/markAsRead failed: $e.message", e
             throw new RuntimeException("request for /user/me/$articleId/markAsRead failed: $e.message", e)
