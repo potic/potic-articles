@@ -71,10 +71,8 @@ class UserService {
         log.info 'fetching user id by auth0 token'
 
         try {
-            String socialId = auth0Service.getSocialId(auth0Token)
-
             def user = usersServiceRest.get {
-                request.uri.path = "/user/search?socialId=$socialId"
+                request.uri.path = '/user/me'
                 request.headers['Authorization'] = 'Bearer ' + auth0Token
             }
 
