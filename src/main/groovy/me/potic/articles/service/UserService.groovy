@@ -19,9 +19,6 @@ import java.util.concurrent.TimeUnit
 @Slf4j
 class UserService {
 
-    @Autowired
-    Auth0Service auth0Service
-
     HttpBuilder usersServiceRest
 
     LoadingCache<String, String> cachedUserIds

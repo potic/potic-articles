@@ -2,7 +2,6 @@ package me.potic.articles
 
 import com.google.common.base.Ticker
 import com.stehno.ersatz.ErsatzServer
-import me.potic.articles.service.Auth0Service
 import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -19,26 +18,11 @@ class UserServiceIntegrationTest extends Specification {
     @Autowired
     UserService userService
 
-    @Autowired
-    Auth0Service auth0Service
-
     def 'String findUserIdByAuth0Token(String auth0Token)'(){
         setup: 'mock servers'
-        ErsatzServer ersatzAuth0 = new ErsatzServer()
-        ersatzAuth0.expectations {
-            get('/userinfo') {
-                called equalTo(1)
-                header 'Authorization', equalTo('Bearer TEST_TOKEN_28')
-                responder {
-                    content '{"sub":"google-oauth2|28","name":"Yaroslav Yermilov"}','application/json'
-                }
-            }
-        }
-        ersatzAuth0.start()
-
-        ErsatzServer ersatzUsersService = new ErsatzServer()
-        ersatzUsersService.expectations {
-            get('/user/search?socialId=google-oauth2|28') {
+        ErsatzServer ersatz = new ErsatzServer()
+        ersatz.expectations {
+            get('/user/me') {
                 called equalTo(1)
                 header 'Authorization', equalTo('Bearer TEST_TOKEN_28')
                 responder {
@@ -46,12 +30,10 @@ class UserServiceIntegrationTest extends Specification {
                 }
             }
         }
-        ersatzUsersService.start()
+        ersatz.start()
 
         and: 'instruct service to use mock server'
-        userService.usersServiceRest(ersatzUsersService.httpUrl)
-        auth0Service.auth0Rest(ersatzAuth0.httpUrl)
-        userService.auth0Service = auth0Service
+        userService.usersServiceRest(ersatz.httpUrl)
 
         when: 'find userId by auth0 token'
         String actualUserId = userService.findUserIdByAuth0Token('TEST_TOKEN_28')
@@ -60,31 +42,17 @@ class UserServiceIntegrationTest extends Specification {
         actualUserId == 'USER_ID_28'
 
         and: 'mock server received expected calls'
-        ersatzAuth0.verify()
-        ersatzUsersService.verify()
+        ersatz.verify()
 
         cleanup: 'stop mock server'
-        ersatzAuth0.stop()
-        ersatzUsersService.stop()
+        ersatz.stop()
     }
 
     def 'String findUserIdByAuth0Token(String auth0Token) - results are cached'(){
         setup: 'mock servers'
-        ErsatzServer ersatzAuth0 = new ErsatzServer()
-        ersatzAuth0.expectations {
-            get('/userinfo') {
-                called equalTo(1)
-                header 'Authorization', equalTo('Bearer TEST_TOKEN_43')
-                responder {
-                    content '{"sub":"google-oauth2|43","name":"Yaroslav Yermilov"}','application/json'
-                }
-            }
-        }
-        ersatzAuth0.start()
-
-        ErsatzServer ersatzUsersService = new ErsatzServer()
-        ersatzUsersService.expectations {
-            get('/user/search?socialId=google-oauth2|43') {
+        ErsatzServer ersatz = new ErsatzServer()
+        ersatz.expectations {
+            get('/user/me') {
                 called equalTo(1)
                 header 'Authorization', equalTo('Bearer TEST_TOKEN_43')
                 responder {
@@ -92,12 +60,10 @@ class UserServiceIntegrationTest extends Specification {
                 }
             }
         }
-        ersatzUsersService.start()
+        ersatz.start()
 
         and: 'instruct service to use mock server'
-        userService.usersServiceRest(ersatzUsersService.httpUrl)
-        auth0Service.auth0Rest(ersatzAuth0.httpUrl)
-        userService.auth0Service = auth0Service
+        userService.usersServiceRest(ersatz.httpUrl)
 
         when: 'fetch userId by auth0 token first time'
         String actualUserId1 = userService.findUserIdByAuth0Token('TEST_TOKEN_43')
@@ -112,31 +78,17 @@ class UserServiceIntegrationTest extends Specification {
         actualUserId2 == 'USER_ID_43'
 
         and: 'mock server received expected calls'
-        ersatzAuth0.verify()
-        ersatzUsersService.verify()
+        ersatz.verify()
 
         cleanup: 'stop mock server'
-        ersatzAuth0.stop()
-        ersatzUsersService.stop()
+        ersatz.stop()
     }
 
     def 'String findUserIdByAuth0Token(String auth0Token) - cached results are expiring'(){
         setup: 'mock servers'
-        ErsatzServer ersatzAuth0 = new ErsatzServer()
-        ersatzAuth0.expectations {
-            get('/userinfo') {
-                called equalTo(2)
-                header 'Authorization', equalTo('Bearer TEST_TOKEN_17')
-                responder {
-                    content '{"sub":"google-oauth2|17","name":"Yaroslav Yermilov"}','application/json'
-                }
-            }
-        }
-        ersatzAuth0.start()
-
-        ErsatzServer ersatzUsersService = new ErsatzServer()
-        ersatzUsersService.expectations {
-            get('/user/search?socialId=google-oauth2|17') {
+        ErsatzServer ersatz = new ErsatzServer()
+        ersatz.expectations {
+            get('/user/me') {
                 called equalTo(2)
                 header 'Authorization', equalTo('Bearer TEST_TOKEN_17')
                 responder {
@@ -144,12 +96,10 @@ class UserServiceIntegrationTest extends Specification {
                 }
             }
         }
-        ersatzUsersService.start()
+        ersatz.start()
 
         and: 'instruct service to use mock server'
-        userService.usersServiceRest(ersatzUsersService.httpUrl)
-        auth0Service.auth0Rest(ersatzAuth0.httpUrl)
-        userService.auth0Service = auth0Service
+        userService.usersServiceRest(ersatz.httpUrl)
 
         and: 'instruct service to use mock time'
         Ticker ticker = Mock()
@@ -169,11 +119,9 @@ class UserServiceIntegrationTest extends Specification {
         actualUserId2 == 'USER_ID_17'
 
         and: 'mock server received expected calls'
-        ersatzAuth0.verify()
-        ersatzUsersService.verify()
+        ersatz.verify()
 
         cleanup: 'stop mock server'
-        ersatzAuth0.stop()
-        ersatzUsersService.stop()
+        ersatz.stop()
     }
 }
