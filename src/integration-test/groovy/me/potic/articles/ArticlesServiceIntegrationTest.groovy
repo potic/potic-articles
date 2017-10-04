@@ -3,6 +3,7 @@ package me.potic.articles
 import com.mongodb.Mongo
 import com.stehno.ersatz.ErsatzServer
 import me.potic.articles.domain.Article
+import me.potic.articles.domain.User
 import me.potic.articles.service.ArticlesService
 import org.junit.Rule
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,9 +50,10 @@ class ArticlesServiceIntegrationTest extends Specification {
         mongoTemplate.insert(articles, Article)
     }
 
-    def 'Collection<Article> getUserUnreadArticles(String pocketSquareUserId, cursorId = null, Integer count, minLength = null, maxLength = null)'() {
+    def 'List<Article> getUserUnreadArticles(User user, cursorId = null, Integer count, minLength = null, maxLength = null)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, null, null)
+        User user1 = new User(id: 'TEST_USER_1')
+        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 10, null, null)
 
         then:
         articles.size() == 3
@@ -81,9 +83,10 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'Collection<Article> getUserUnreadArticles(String pocketSquareUserId, cursorId = null, Integer count, minLength = null, maxLength = null) - limit count'() {
+    def 'List<Article> getUserUnreadArticles(User user, cursorId = null, Integer count, minLength = null, maxLength = null) - limit count'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 1, null, null)
+        User user1 = new User(id: 'TEST_USER_1')
+        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 1, null, null)
 
         then:
         articles.size() == 1
@@ -97,9 +100,10 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'Collection<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, minLength = null, maxLength = null)'() {
+    def 'List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, minLength = null, maxLength = null)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', 'TEST_ARTICLE_2', 1, null, null)
+        User user1 = new User(id: 'TEST_USER_1')
+        List<Article> articles = articlesService.getUserUnreadArticles(user1, 'TEST_ARTICLE_2', 1, null, null)
 
         then:
         articles.size() == 1
@@ -113,9 +117,10 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'Collection<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, Integer minLength, maxLength = null)'() {
+    def 'List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, Integer minLength, maxLength = null)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, 250, null)
+        User user1 = new User(id: 'TEST_USER_1')
+        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 10, 250, null)
 
         then:
         articles.size() == 1
@@ -129,9 +134,10 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'Collection<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, minLength = null, Integer maxLength)'() {
+    def 'List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, minLength = null, Integer maxLength)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, null, 150)
+        User user1 = new User(id: 'TEST_USER_1')
+        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 10, null, 150)
 
         then:
         articles.size() == 1
@@ -145,9 +151,10 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'Collection<Article> getUserUnreadArticles(String pocketSquareUserId, String cursorId, Integer count, Integer minLength, Integer maxLength)'() {
+    def 'List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, Integer minLength, Integer maxLength)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, 150, 250)
+        User user1 = new User(id: 'TEST_USER_1')
+        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 10, 150, 250)
 
         then:
         articles.size() == 1
@@ -163,9 +170,11 @@ class ArticlesServiceIntegrationTest extends Specification {
 
     def 'void markArticleAsRead(String pocketSquareUserId, String articleId)'() {
         setup: 'mock server instead of actual potic-pocket-api'
+        User user1 = new User(id: 'TEST_USER_1', pocketAccessToken: 'POCKET_TOKEN_1')
+
         ErsatzServer ersatz = new ErsatzServer()
         ersatz.expectations {
-            post('/archive/TEST_USER_1/POCKET_2') {
+            post('/archive/POCKET_TOKEN_1/POCKET_2') {
                 called equalTo(1)
                 responder {
                     content 'OK','plain/text'
@@ -178,7 +187,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         articlesService.pocketApiRest(ersatz.httpUrl)
 
         when: 'mark article as read'
-        articlesService.markArticleAsRead('TEST_USER_1', 'TEST_ARTICLE_2')
+        articlesService.markArticleAsRead(user1, 'TEST_ARTICLE_2')
 
         then: 'record in mongodb is updated'
         Article actual = mongoTemplate.find(query(where('id').is('TEST_ARTICLE_2')), Article).first()
@@ -193,9 +202,11 @@ class ArticlesServiceIntegrationTest extends Specification {
 
     def 'void markArticleAsRead(String pocketSquareUserId, String articleId) - call to potic-pocket-api failed'() {
         setup: 'mock server that fails to answer requests instead of actual potic-pocket-api'
+        User user1 = new User(id: 'TEST_USER_1', pocketAccessToken: 'POCKET_TOKEN_1')
+
         ErsatzServer ersatz = new ErsatzServer()
         ersatz.expectations {
-            post('/archive/TEST_USER_1/POCKET_2') {
+            post('/archive/POCKET_TOKEN_1/POCKET_2') {
                 called equalTo(1)
                 responder {
                     code(500)
@@ -208,7 +219,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         articlesService.pocketApiRest(ersatz.httpUrl)
 
         when: 'mark article as read'
-        articlesService.markArticleAsRead('TEST_USER_1', 'TEST_ARTICLE_2')
+        articlesService.markArticleAsRead(user1, 'TEST_ARTICLE_2')
 
         then: 'exception is thrown'
         thrown(RuntimeException)

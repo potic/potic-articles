@@ -1,7 +1,6 @@
 package me.potic.articles.service
 
-import com.codahale.metrics.Counter
-import com.codahale.metrics.MetricRegistry
+import com.codahale.metrics.annotation.Counted
 import com.codahale.metrics.annotation.Timed
 import com.google.common.base.Ticker
 import com.google.common.cache.CacheBuilder
@@ -9,6 +8,7 @@ import com.google.common.cache.CacheLoader
 import com.google.common.cache.LoadingCache
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
+import me.potic.articles.domain.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -16,79 +16,68 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 import java.util.concurrent.TimeUnit
 
-import static com.codahale.metrics.MetricRegistry.name
-
 @Service
 @Slf4j
 class UserService {
 
-    HttpBuilder auth0Rest
+    HttpBuilder usersServiceRest
 
-    LoadingCache<String, String> cachedPocketSquareId
-
-    Counter fetchPocketSquareIdTotalCount
-    Counter fetchPocketSquareIdAuth0Count
+    LoadingCache<String, User> cachedUsers
 
     @Autowired
-    void initMetrics(MetricRegistry metricRegistry) {
-        fetchPocketSquareIdTotalCount = metricRegistry.counter(name(UserService, 'fetchPocketSquareIdByAuth0Token', 'count', 'total'))
-        fetchPocketSquareIdAuth0Count = metricRegistry.counter(name(UserService, 'fetchPocketSquareIdByAuth0Token', 'count', 'auth0'))
-    }
-
-    @Autowired
-    HttpBuilder auth0Rest(@Value('${services.auth0.url}') String auth0ServiceUrl) {
-        auth0Rest = HttpBuilder.configure {
-            request.uri = auth0ServiceUrl
+    HttpBuilder usersServiceRest(@Value('${services.users.url}') String usersServiceUrl) {
+        usersServiceRest = HttpBuilder.configure {
+            request.uri = usersServiceUrl
         }
     }
 
     @PostConstruct
-    void initCachedPocketSquareId() {
-        cachedPocketSquareId(Ticker.systemTicker())
+    void initCachedUserIds() {
+        cachedUsers(Ticker.systemTicker())
     }
 
-    LoadingCache<String, String> cachedPocketSquareId(Ticker ticker) {
-        cachedPocketSquareId = CacheBuilder.newBuilder()
+    LoadingCache<String, User> cachedUsers(Ticker ticker) {
+        cachedUsers = CacheBuilder.newBuilder()
                 .expireAfterWrite(1, TimeUnit.DAYS)
                 .ticker(ticker)
                 .build(
-                        new CacheLoader<String, String>() {
+                        new CacheLoader<String, User>() {
 
                             @Override
-                            String load(String auth0Token) {
-                                doAuth0RequestForPocketSquareId(auth0Token)
+                            User load(String auth0Token) {
+                                fetchUserByAuth0Token(auth0Token)
                             }
                         }
                 )
     }
 
-    String fetchPocketSquareIdByAuth0Token(String auth0Token) {
-        log.info 'fetching user pocketSquareId by auth0 token'
-        fetchPocketSquareIdTotalCount.inc()
+    @Counted(name = 'findUserByAuth0Token.total')
+    User findUserByAuth0Token(String auth0Token) {
+        log.info 'finding user by auth0 token'
 
         try {
-            return cachedPocketSquareId.get(auth0Token)
+            return cachedUsers.get(auth0Token)
         } catch (e) {
-            log.error "fetching user pocketSquareId by auth0 token failed: $e.message", e
-            throw new RuntimeException('fetching user pocketSquareId by auth0 token failed', e)
+            log.error "finding user by auth0 token failed: $e.message", e
+            throw new RuntimeException('finding user by auth0 token failed', e)
         }
     }
 
-    @Timed(name = 'doAuth0RequestForPocketSquareId')
-    String doAuth0RequestForPocketSquareId(String auth0Token) {
-        log.info 'performing auth0 request to get user pocketSquareId by auth0 token'
-        fetchPocketSquareIdAuth0Count.inc()
+    @Counted(name = 'findUserByAuth0Token.cacheMiss')
+    @Timed(name = 'fetchUserByAuth0Token')
+    User fetchUserByAuth0Token(String auth0Token) {
+        log.info 'fetching user by auth0 token'
 
         try {
-            def authResult = auth0Rest.get {
-                request.uri.path = '/userinfo'
+            def response = usersServiceRest.get {
+                request.uri.path = '/user/me'
                 request.headers['Authorization'] = 'Bearer ' + auth0Token
             }
 
-            return authResult['https://potic.me/pocketSquareId']
+            return new User(response)
         } catch (e) {
-            log.error "performing auth0 request to get user pocketSquareId by auth0 token failed: $e.message", e
-            throw new RuntimeException('performing auth0 request to get user pocketSquareId by auth0 token failed', e)
+            log.error "fetching user by auth0 token failed: $e.message", e
+            throw new RuntimeException('fetching user by auth0 token failed', e)
         }
     }
 }

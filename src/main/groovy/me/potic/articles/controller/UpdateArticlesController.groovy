@@ -2,6 +2,7 @@ package me.potic.articles.controller
 
 import com.codahale.metrics.annotation.Timed
 import groovy.util.logging.Slf4j
+import me.potic.articles.domain.User
 import me.potic.articles.service.ArticlesService
 import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,8 +30,8 @@ class UpdateArticlesController {
         log.info "receive request for /user/me/$articleId/markAsRead"
 
         try {
-            String pocketSquareUserId = userService.fetchPocketSquareIdByAuth0Token(principal.token)
-            articlesService.markArticleAsRead(pocketSquareUserId, articleId)
+            User user = userService.findUserByAuth0Token(principal.token)
+            articlesService.markArticleAsRead(user, articleId)
         } catch (e) {
             log.error "request for /user/me/$articleId/markAsRead failed: $e.message", e
             throw new RuntimeException("request for /user/me/$articleId/markAsRead failed: $e.message", e)
