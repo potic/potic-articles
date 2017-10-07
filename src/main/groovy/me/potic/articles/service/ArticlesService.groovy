@@ -53,6 +53,8 @@ class ArticlesService {
                 unreadQuery = unreadQuery.and('wordCount').lte(maxLength)
             }
 
+            unreadQuery = unreadQuery.andOperator(where('title').ne(null), where('title').ne(''))
+
             return mongoTemplate.find(
                     query(unreadQuery).with(new Sort(Sort.Direction.DESC, 'timeAdded')).limit(count),
                     Article
