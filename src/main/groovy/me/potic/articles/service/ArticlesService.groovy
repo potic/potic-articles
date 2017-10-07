@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.data.mongodb.core.query.CriteriaDefinition
+import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.stereotype.Service
 
 import static org.springframework.data.mongodb.core.query.Criteria.where
@@ -37,26 +37,26 @@ class ArticlesService {
         log.info "getting $count unread articles for user $user.id starting from $cursorId with length between $minLength and $maxLength"
 
         try {
-            CriteriaDefinition unreadQuery
-            if (cursorId == null) {
-                unreadQuery = where('userId').is(user.id).and('read').is(false)
-            } else {
+            Criteria[] criteria = []
+            criteria += where('userId').is(user.id)
+            criteria += where('read').is(false)
+            if (cursorId != null) {
                 Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
-                unreadQuery = where('userId').is(user.id).and('read').is(false).and('timeAdded').lt(cursorArticle.timeAdded)
+                criteria += where('timeAdded').lt(cursorArticle.timeAdded)
             }
 
-            if (minLength != null && maxLength != null) {
-                unreadQuery = unreadQuery.andOperator(where('wordCount').gt(minLength), where('wordCount').lte(maxLength))
-            } else if (minLength != null) {
-                unreadQuery = unreadQuery.and('wordCount').gt(minLength)
-            } else if (maxLength != null) {
-                unreadQuery = unreadQuery.and('wordCount').lte(maxLength)
+            if (minLength != null) {
+                criteria += where('wordCount').gt(minLength)
+            }
+            if (maxLength != null) {
+                criteria += where('wordCount').lte(maxLength)
             }
 
-            unreadQuery = unreadQuery.andOperator(where('title').ne(null), where('title').ne(''))
+            criteria += where('title').ne(null)
+            criteria += where('title').ne('')
 
             return mongoTemplate.find(
-                    query(unreadQuery).with(new Sort(Sort.Direction.DESC, 'timeAdded')).limit(count),
+                    query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'timeAdded')).limit(count),
                     Article
             )
         } catch (e) {

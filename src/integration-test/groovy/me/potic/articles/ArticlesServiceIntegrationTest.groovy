@@ -40,12 +40,20 @@ class ArticlesServiceIntegrationTest extends Specification {
         articlesService.mongoTemplate = mongoTemplate
 
         List articles = [
-                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').pocketId('POCKET_1').read(false).wordCount(100).timeAdded(1).build(),
-                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').pocketId('POCKET_2').read(false).wordCount(200).timeAdded(2).build(),
-                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').pocketId('POCKET_3').read(false).wordCount(300).timeAdded(3).build(),
-                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').pocketId('POCKET_4').read(true).wordCount(100).timeAdded(4).build(),
-                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').pocketId('POCKET_5').read(false).wordCount(200).timeAdded(5).build(),
-                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').pocketId('POCKET_6').read(true).wordCount(100).timeAdded(6).build()
+                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').pocketId('POCKET_1').title('TITLE_1').read(false).wordCount(100).timeAdded(1).build(),
+                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').pocketId('POCKET_2').title('TITLE_2').read(false).wordCount(200).timeAdded(2).build(),
+                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').pocketId('POCKET_3').title('TITLE_3').read(false).wordCount(300).timeAdded(3).build(),
+                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').pocketId('POCKET_4').title('TITLE_4').read(true).wordCount(100).timeAdded(4).build(),
+                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').pocketId('POCKET_5').title('TITLE_5').read(false).wordCount(200).timeAdded(5).build(),
+                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').pocketId('POCKET_6').title('TITLE_6').read(true).wordCount(100).timeAdded(6).build(),
+
+                // same articles with no title
+                Article.builder().id('TEST_ARTICLE_01').userId('TEST_USER_1').pocketId('POCKET_1').read(false).wordCount(100).timeAdded(1).build(),
+                Article.builder().id('TEST_ARTICLE_02').userId('TEST_USER_1').pocketId('POCKET_2').read(false).wordCount(200).timeAdded(2).build(),
+                Article.builder().id('TEST_ARTICLE_03').userId('TEST_USER_1').pocketId('POCKET_3').read(false).wordCount(300).timeAdded(3).build(),
+                Article.builder().id('TEST_ARTICLE_04').userId('TEST_USER_1').pocketId('POCKET_4').read(true).wordCount(100).timeAdded(4).build(),
+                Article.builder().id('TEST_ARTICLE_05').userId('TEST_USER_2').pocketId('POCKET_5').read(false).wordCount(200).timeAdded(5).build(),
+                Article.builder().id('TEST_ARTICLE_06').userId('TEST_USER_2').pocketId('POCKET_6').read(true).wordCount(100).timeAdded(6).build()
         ]
         mongoTemplate.insert(articles, Article)
     }
