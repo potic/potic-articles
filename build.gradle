@@ -1,9 +1,9 @@
 plugins {
-    id 'com.gradle.build-scan' version '1.8'
+    id 'com.gradle.build-scan' version '1.9'
 
     id 'groovy'
 
-    id 'org.springframework.boot' version '1.5.4.RELEASE'
+    id 'org.springframework.boot' version '1.5.7.RELEASE'
 
     id 'jacoco'
 
@@ -105,7 +105,3 @@ tasks.withType(Test) {
 
 apply plugin: 'application'
 mainClassName = 'me.potic.articles.Application'
-bootRepackage {
-    mainClass = 'me.potic.articles.Application'
-}
-
