@@ -104,5 +104,5 @@ tasks.withType(Test) {
 }
 
 bootRepackage {
-    mainClassName = 'me.potic.articles.Application'
+    mainClass = 'me.potic.articles.Application'
 }
