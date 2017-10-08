@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 import java.security.Principal
@@ -35,6 +36,20 @@ class UpdateArticlesController {
         } catch (e) {
             log.error "request for /user/me/$articleId/markAsRead failed: $e.message", e
             throw new RuntimeException("request for /user/me/$articleId/markAsRead failed: $e.message", e)
+        }
+    }
+
+    @Timed(name = 'user.article.upsert.pocket')
+    @CrossOrigin
+    @PostMapping(path = '/user/{userId}/article/upsert/pocket')
+    void upsertFromPocket(@PathVariable String userId, @RequestBody Map articleFromPocket) {
+        log.info "receive request for /user/${userId}/article/upsert/pocket"
+
+        try {
+            articlesService.upsertFromPocket(userId, articleFromPocket)
+        } catch (e) {
+            log.error "request for /user/${userId}/article/upsert/pocket failed: $e.message", e
+            throw new RuntimeException("request for /user/${userId}/article/upsert/pocket failed: $e.message", e)
         }
     }
 }

@@ -81,4 +81,68 @@ class ArticlesService {
             throw new RuntimeException("marking article $articleId as read for user $user.id failed: $e.message", e)
         }
     }
+
+    @Timed(name = 'upsertFromPocket')
+    Article upsertFromPocket(String userId, Map articleFromPocket) {
+        log.info "upserting article for user $userId"
+
+        try {
+            Article article = findAlreadyIngestedFromPocket(userId, articleFromPocket)
+
+            if (article == null) {
+                article = new Article()
+                article.userId = userId
+            }
+
+            article.fromPocket = articleFromPocket
+
+            mongoTemplate.save(article)
+
+            return article
+        } catch (e) {
+            log.error "upserting article for user $userId failed: $e.message", e
+            throw new RuntimeException("upserting article for user $userId failed: $e.message", e)
+        }
+    }
+
+    @Timed(name = 'alreadyIngestedFromPocket')
+    Article findAlreadyIngestedFromPocket(String userId, Map articleFromPocket) {
+        log.info "checking if article for user $userId was already ingested from pocket"
+
+        try {
+            List<Article> candidates = mongoTemplate.find(query(
+                    new Criteria().andOperator(
+                            where('userId').is(userId),
+                            new Criteria().orOperator(
+                                    where('fromPocket.item_id').is(articleFromPocket['item_id']),
+                                    where('fromPocket.resolved_id').is(articleFromPocket['resolved_id']),
+                                    where('fromPocket.given_url').is(articleFromPocket['given_url'])
+                            )
+                    )
+            ), Article)
+
+            if (candidates.size() > 1) {
+                log.warn("there are more than 1 already ingested candidate for user #${userId} and article from pocket ${articleFromPocket}")
+            }
+
+            Article tieBreakCandidate = null
+
+            for (Article candidate : candidates) {
+                if (candidate['fromPocket']['item_id'] == articleFromPocket['item_id']) {
+                    return candidate
+                }
+                if (candidate['fromPocket']['resolved_id'] == articleFromPocket['resolved_id']) {
+                    return candidate
+                }
+                if (candidate['fromPocket']['given_url'] == articleFromPocket['given_url']) {
+                    tieBreakCandidate = candidate
+                }
+            }
+
+            return tieBreakCandidate
+        } catch (e) {
+            log.error "checking if article for user $userId was already ingested from pocket failed: $e.message", e
+            throw new RuntimeException("checking if article for user $userId was already ingested from pocket failed: $e.message", e)
+        }
+    }
 }
