@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Service
 
 import static org.springframework.data.mongodb.core.query.Criteria.where
@@ -96,6 +97,8 @@ class ArticlesService {
 
             article.fromPocket = articleFromPocket
 
+            article.basicCard.actual = false
+
             mongoTemplate.save(article)
 
             return article
@@ -143,6 +146,39 @@ class ArticlesService {
         } catch (e) {
             log.error "checking if article for user $userId was already ingested from pocket failed: $e.message", e
             throw new RuntimeException("checking if article for user $userId was already ingested from pocket failed: $e.message", e)
+        }
+    }
+
+    @Timed(name = 'updateArticle')
+    void updateArticle(Article article) {
+        log.info "updating article ${article}..."
+
+        try {
+            mongoTemplate.save(article)
+        } catch (e) {
+            log.error "updating article ${article} failed: $e.message", e
+            throw new RuntimeException("updating article ${article} failed: $e.message", e)
+        }
+    }
+
+    @Timed(name = 'findNonActualArticles')
+    Collection<Article> findNonActualArticles(String groupName, Integer count) {
+        log.info "getting $count non-actual articles for group $groupName..."
+
+        try {
+            Query query = query(new Criteria().andOperator(
+                    where('fromPocket').ne(null),
+                    new Criteria().orOperator(where('basicCard.actual').is(null), where('basicCard.actual').is(false))
+            ))
+
+            if (count != null) {
+                query = query.limit(count)
+            }
+
+            return mongoTemplate.find(query, Article)
+        } catch (e) {
+            log.error "getting $count non-actual articles for group $groupName failed: $e.message", e
+            throw new RuntimeException("getting $count non-actual articles for group $groupName failed: $e.message", e)
         }
     }
 }

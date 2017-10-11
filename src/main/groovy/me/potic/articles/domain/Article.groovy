@@ -12,4 +12,6 @@ class Article {
     String userId
 
     Map<String, Object> fromPocket
+
+    Map<String, Object> basicCard
 }
