@@ -40,24 +40,23 @@ class ArticlesService {
         try {
             Criteria[] criteria = []
             criteria += where('userId').is(user.id)
-            criteria += where('read').is(false)
+            criteria += where('fromPocket.read').ne('1')
             if (cursorId != null) {
                 Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
-                criteria += where('timeAdded').lt(cursorArticle.timeAdded)
+                criteria += where('fromPocket.time_added').lt(cursorArticle.fromPocket.time_added)
             }
 
             if (minLength != null) {
-                criteria += where('wordCount').gt(minLength)
+                criteria += where('fromPocket.word_count').gt(minLength)
             }
             if (maxLength != null) {
-                criteria += where('wordCount').lte(maxLength)
+                criteria += where('fromPocket.word_count').lte(maxLength)
             }
 
-            criteria += where('title').ne(null)
-            criteria += where('title').ne('')
+            criteria += where('basicCard.actual').is(true)
 
             return mongoTemplate.find(
-                    query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'timeAdded')).limit(count),
+                    query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added')).limit(count),
                     Article
             )
         } catch (e) {
@@ -96,7 +95,14 @@ class ArticlesService {
             }
 
             article.fromPocket = articleFromPocket
+            article.fromPocket.time_added = Long.parseLong(article.fromPocket.time_added)
+            article.fromPocket.time_updated = Long.parseLong(article.fromPocket.time_updated)
+            article.fromPocket.time_favorited = Long.parseLong(article.fromPocket.time_favorited)
+            article.fromPocket.time_read = Long.parseLong(article.fromPocket.time_read)
+            article.fromPocket.word_count = Long.parseLong(article.fromPocket.word_count)
 
+            if (article.basicCard == null) article.basicCard = [:]
+            article.basicCard.id = article.id
             article.basicCard.actual = false
 
             mongoTemplate.save(article)
