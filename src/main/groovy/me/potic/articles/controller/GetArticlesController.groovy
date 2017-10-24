@@ -41,4 +41,21 @@ class GetArticlesController {
             throw new RuntimeException("request for /user/me/article/unread failed: $e.message", e)
         }
     }
+
+    @Timed(name = 'article.search.nonActual')
+    @CrossOrigin
+    @GetMapping(path = '/article/search/nonActual')
+    @ResponseBody Collection<Article> findNonActualArticles(
+            @RequestParam(value = 'group') String groupName,
+            @RequestParam(value = 'count', required = false) Integer count
+    ) {
+        log.info "receive GET request for /article/search/nonActual?group=${groupName}&count=${count}"
+
+        try {
+            return articlesService.findNonActualArticles(groupName, count)
+        } catch (e) {
+            log.error "GET request for /article/search/notActual?group=${groupName}&count=${count} failed: $e.message", e
+            throw new RuntimeException("GET request for /article/search/nonActual?group=${groupName}&count=${count} failed: $e.message", e)
+        }
+    }
 }

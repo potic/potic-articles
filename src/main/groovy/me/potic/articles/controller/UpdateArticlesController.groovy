@@ -2,14 +2,12 @@ package me.potic.articles.controller
 
 import com.codahale.metrics.annotation.Timed
 import groovy.util.logging.Slf4j
+import me.potic.articles.domain.Article
 import me.potic.articles.domain.User
 import me.potic.articles.service.ArticlesService
 import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 import java.security.Principal
 
@@ -35,6 +33,34 @@ class UpdateArticlesController {
         } catch (e) {
             log.error "request for /user/me/$articleId/markAsRead failed: $e.message", e
             throw new RuntimeException("request for /user/me/$articleId/markAsRead failed: $e.message", e)
+        }
+    }
+
+    @Timed(name = 'user.article.fromPocket')
+    @CrossOrigin
+    @PostMapping(path = '/user/{userId}/article/fromPocket')
+    void upsertFromPocket(@PathVariable String userId, @RequestBody Map articleFromPocket) {
+        log.info "receive request for /user/${userId}/article/fromPocket"
+
+        try {
+            articlesService.upsertFromPocket(userId, articleFromPocket)
+        } catch (e) {
+            log.error "request for /user/${userId}/article/fromPocket failed: $e.message", e
+            throw new RuntimeException("request for /user/${userId}/article/fromPocket failed: $e.message", e)
+        }
+    }
+
+    @Timed(name = 'user.article.PUT')
+    @CrossOrigin
+    @PutMapping(path = '/article')
+    void updateArticle(@RequestBody Article article) {
+        log.info "receive PUT request for /article"
+
+        try {
+            articlesService.updateArticle(article)
+        } catch (e) {
+            log.error "PUT request for /article failed: $e.message", e
+            throw new RuntimeException("PUT request for /article failed: $e.message", e)
         }
     }
 }
