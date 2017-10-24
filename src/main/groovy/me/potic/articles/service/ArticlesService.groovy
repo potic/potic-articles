@@ -84,7 +84,7 @@ class ArticlesService {
 
     @Timed(name = 'upsertFromPocket')
     Article upsertFromPocket(String userId, Map articleFromPocket) {
-        log.info "upserting article for user $userId"
+        log.info "upserting article $articleFromPocket for user $userId"
 
         try {
             Article article = findAlreadyIngestedFromPocket(userId, articleFromPocket)
@@ -109,8 +109,8 @@ class ArticlesService {
 
             return article
         } catch (e) {
-            log.error "upserting article for user $userId failed: $e.message", e
-            throw new RuntimeException("upserting article for user $userId failed: $e.message", e)
+            log.error "upserting article $articleFromPocket for user $userId failed: $e.message", e
+            throw new RuntimeException("upserting article $articleFromPocket for user $userId failed: $e.message", e)
         }
     }
 

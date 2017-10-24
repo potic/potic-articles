@@ -40,13 +40,13 @@ class UpdateArticlesController {
     @CrossOrigin
     @PostMapping(path = '/user/{userId}/article/fromPocket')
     void upsertFromPocket(@PathVariable String userId, @RequestBody Map articleFromPocket) {
-        log.info "receive request for /user/${userId}/article/fromPocket"
+        log.info "receive POST request for /user/${userId}/article/fromPocket; BODY=${articleFromPocket}"
 
         try {
             articlesService.upsertFromPocket(userId, articleFromPocket)
         } catch (e) {
-            log.error "request for /user/${userId}/article/fromPocket failed: $e.message", e
-            throw new RuntimeException("request for /user/${userId}/article/fromPocket failed: $e.message", e)
+            log.error "POST request for /user/${userId}/article/fromPocket; BODY=${articleFromPocket} failed: $e.message", e
+            throw new RuntimeException("POST request for /user/${userId}/article/fromPocket; BODY=${articleFromPocket} failed: $e.message", e)
         }
     }
 
