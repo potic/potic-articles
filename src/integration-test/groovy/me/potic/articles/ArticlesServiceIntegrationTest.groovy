@@ -69,7 +69,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_3'
             userId == 'TEST_USER_1'
-            basicCard.actual == '1'
+            basicCard.actual == true
             fromPocket.read == '0'
             fromPocket.word_count == 300
             fromPocket.time_added == 3
@@ -78,7 +78,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[1]) {
             id == 'TEST_ARTICLE_2'
             userId == 'TEST_USER_1'
-            basicCard.actual == '1'
+            basicCard.actual == true
             fromPocket.read == '0'
             fromPocket.word_count == 200
             fromPocket.time_added == 2
@@ -87,7 +87,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[2]) {
             id == 'TEST_ARTICLE_1'
             userId == 'TEST_USER_1'
-            basicCard.actual == '1'
+            basicCard.actual == true
             fromPocket.read == '0'
             fromPocket.word_count == 100
             fromPocket.time_added == 1
@@ -105,7 +105,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_3'
             userId == 'TEST_USER_1'
-            basicCard.actual == '1'
+            basicCard.actual == true
             fromPocket.read == '0'
             fromPocket.word_count == 300
             fromPocket.time_added == 3
@@ -123,7 +123,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_1'
             userId == 'TEST_USER_1'
-            basicCard.actual == '1'
+            basicCard.actual == true
             fromPocket.read == '0'
             fromPocket.word_count == 100
             fromPocket.time_added == 1
@@ -141,7 +141,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_3'
             userId == 'TEST_USER_1'
-            basicCard.actual == '1'
+            basicCard.actual == true
             fromPocket.read == '0'
             fromPocket.word_count == 300
             fromPocket.time_added == 3
@@ -159,7 +159,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_1'
             userId == 'TEST_USER_1'
-            basicCard.actual == '1'
+            basicCard.actual == true
             fromPocket.read == '0'
             fromPocket.word_count == 100
             fromPocket.time_added == 1
@@ -177,7 +177,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_2'
             userId == 'TEST_USER_1'
-            basicCard.actual == '1'
+            basicCard.actual == true
             fromPocket.read == '0'
             fromPocket.word_count == 200
             fromPocket.time_added == 2
