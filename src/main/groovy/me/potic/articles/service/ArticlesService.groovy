@@ -72,10 +72,10 @@ class ArticlesService {
         try {
             Article readArticle = mongoTemplate.find(query(where('id').is(articleId)), Article).first()
             pocketApiRest.post {
-                request.uri.path = "/archive/${user.pocketAccessToken}/${readArticle.pocketId}"
+                request.uri.path = "/archive/${user.pocketAccessToken}/${readArticle.fromPocket.item_id}"
             }
 
-            mongoTemplate.updateFirst(query(where('id').is(articleId)), update('read', true), Article)
+            mongoTemplate.updateFirst(query(where('id').is(articleId)), update('fromPocket.read', true), Article)
         } catch (e) {
             log.error "marking article $articleId as read for user $user.id failed: $e.message", e
             throw new RuntimeException("marking article $articleId as read for user $user.id failed: $e.message", e)

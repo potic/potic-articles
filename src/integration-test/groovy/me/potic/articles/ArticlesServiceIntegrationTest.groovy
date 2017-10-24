@@ -40,20 +40,20 @@ class ArticlesServiceIntegrationTest extends Specification {
         articlesService.mongoTemplate = mongoTemplate
 
         List articles = [
-                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').pocketId('POCKET_1').title('TITLE_1').read(false).wordCount(100).timeAdded(1).build(),
-                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').pocketId('POCKET_2').title('TITLE_2').read(false).wordCount(200).timeAdded(2).build(),
-                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').pocketId('POCKET_3').title('TITLE_3').read(false).wordCount(300).timeAdded(3).build(),
-                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').pocketId('POCKET_4').title('TITLE_4').read(true).wordCount(100).timeAdded(4).build(),
-                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').pocketId('POCKET_5').title('TITLE_5').read(false).wordCount(200).timeAdded(5).build(),
-                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').pocketId('POCKET_6').title('TITLE_6').read(true).wordCount(100).timeAdded(6).build(),
+                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_1', resolved_title: 'TITLE_1', read: '0', word_count: 100, time_added: 1 ]).build(),
+                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_2', resolved_title: 'TITLE_2', read: '0', word_count: 200, time_added: 2 ]).build(),
+                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_3', resolved_title: 'TITLE_3', read: '0', word_count: 300, time_added: 3 ]).build(),
+                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_4', resolved_title: 'TITLE_4', read: '1', word_count: 100, time_added: 4 ]).build(),
+                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_5', resolved_title: 'TITLE_5', read: '0', word_count: 200, time_added: 5 ]).build(),
+                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_6', resolved_title: 'TITLE_6', read: '1', word_count: 100, time_added: 6 ]).build(),
 
-                // same articles with no title
-                Article.builder().id('TEST_ARTICLE_01').userId('TEST_USER_1').pocketId('POCKET_1').read(false).wordCount(100).timeAdded(1).build(),
-                Article.builder().id('TEST_ARTICLE_02').userId('TEST_USER_1').pocketId('POCKET_2').read(false).wordCount(200).timeAdded(2).build(),
-                Article.builder().id('TEST_ARTICLE_03').userId('TEST_USER_1').pocketId('POCKET_3').read(false).wordCount(300).timeAdded(3).build(),
-                Article.builder().id('TEST_ARTICLE_04').userId('TEST_USER_1').pocketId('POCKET_4').read(true).wordCount(100).timeAdded(4).build(),
-                Article.builder().id('TEST_ARTICLE_05').userId('TEST_USER_2').pocketId('POCKET_5').read(false).wordCount(200).timeAdded(5).build(),
-                Article.builder().id('TEST_ARTICLE_06').userId('TEST_USER_2').pocketId('POCKET_6').read(true).wordCount(100).timeAdded(6).build()
+                // same articles but non-actual
+                Article.builder().id('TEST_ARTICLE_01').userId('TEST_USER_1').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_1', read: '0', word_count: 100, time_added: 1 ]).build(),
+                Article.builder().id('TEST_ARTICLE_02').userId('TEST_USER_1').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_2', read: '0', word_count: 200, time_added: 2 ]).build(),
+                Article.builder().id('TEST_ARTICLE_03').userId('TEST_USER_1').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_3', read: '0', word_count: 300, time_added: 3 ]).build(),
+                Article.builder().id('TEST_ARTICLE_04').userId('TEST_USER_1').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_4', read: '1', word_count: 100, time_added: 4 ]).build(),
+                Article.builder().id('TEST_ARTICLE_05').userId('TEST_USER_2').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_5', read: '0', word_count: 200, time_added: 5 ]).build(),
+                Article.builder().id('TEST_ARTICLE_06').userId('TEST_USER_2').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_6', read: '1', word_count: 100, time_added: 6 ]).build()
         ]
         mongoTemplate.insert(articles, Article)
     }
@@ -176,7 +176,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'void markArticleAsRead(String pocketSquareUserId, String articleId)'() {
+    def 'void markArticleAsRead(User user, String articleId)'() {
         setup: 'mock server instead of actual potic-pocket-api'
         User user1 = new User(id: 'TEST_USER_1', pocketAccessToken: 'POCKET_TOKEN_1')
 
@@ -199,7 +199,7 @@ class ArticlesServiceIntegrationTest extends Specification {
 
         then: 'record in mongodb is updated'
         Article actual = mongoTemplate.find(query(where('id').is('TEST_ARTICLE_2')), Article).first()
-        actual.read == true
+        actual.fromPocket.read == true
 
         and: 'mock server received expected calls'
         ersatz.verify()
@@ -208,7 +208,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         ersatz.stop()
     }
 
-    def 'void markArticleAsRead(String pocketSquareUserId, String articleId) - call to potic-pocket-api failed'() {
+    def 'void markArticleAsRead(User user, String articleId) - call to potic-pocket-api failed'() {
         setup: 'mock server that fails to answer requests instead of actual potic-pocket-api'
         User user1 = new User(id: 'TEST_USER_1', pocketAccessToken: 'POCKET_TOKEN_1')
 
@@ -234,7 +234,7 @@ class ArticlesServiceIntegrationTest extends Specification {
 
         and: 'record in mongodb is not updated'
         Article actual = mongoTemplate.find(query(where('id').is('TEST_ARTICLE_2')), Article).first()
-        actual.read == false
+        actual.fromPocket.read == false
 
         and: 'mock server received expected calls'
         ersatz.verify()
