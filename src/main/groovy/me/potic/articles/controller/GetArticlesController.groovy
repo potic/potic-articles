@@ -31,14 +31,18 @@ class GetArticlesController {
             @RequestParam(value = 'maxLength', required = false) Integer maxLength,
             final Principal principal
     ) {
-        log.info 'receive request for /user/me/article/unread'
+        log.info 'receive GET request for /user/me/article/unread'
 
         try {
             User user = userService.findUserByAuth0Token(principal.token)
-            return articlesService.getUserUnreadArticles(user, cursorId, count, minLength, maxLength)
+            Collection<Article> response = articlesService.getUserUnreadArticles(user, cursorId, count, minLength, maxLength)
+
+            log.debug "user ${user} requested unread articles, got ${response}"
+
+            return response
         } catch (e) {
-            log.error "request for /user/me/article/unread failed: $e.message", e
-            throw new RuntimeException("request for /user/me/article/unread failed: $e.message", e)
+            log.error "GET request for /user/me/article/unread failed: $e.message", e
+            throw new RuntimeException("GET request for /user/me/article/unread failed: $e.message", e)
         }
     }
 
