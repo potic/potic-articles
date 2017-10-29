@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.containers.GenericContainer
+import spock.lang.Ignore
 import spock.lang.IgnoreIf
 import spock.lang.Specification
 
@@ -249,5 +250,20 @@ class ArticlesServiceIntegrationTest extends Specification {
 
         cleanup: 'stop mock server'
         ersatz.stop()
+    }
+
+    @Ignore
+    def 'Article upsertFromPocket(String userId, Map articleFromPocket) - new article'() {
+
+    }
+
+    @Ignore
+    def 'Article upsertFromPocket(String userId, Map articleFromPocket) - already ingested article'() {
+
+    }
+
+    @Ignore
+    def 'Article upsertFromPocket(String userId, Map articleFromPocket) - empty article'() {
+
     }
 }
