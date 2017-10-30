@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.containers.GenericContainer
-import spock.lang.Ignore
 import spock.lang.IgnoreIf
 import spock.lang.Specification
 
@@ -252,18 +251,119 @@ class ArticlesServiceIntegrationTest extends Specification {
         ersatz.stop()
     }
 
-    @Ignore
     def 'Article upsertFromPocket(String userId, Map articleFromPocket) - new article'() {
+        setup:
+        String userId = 'TEST_USER_1'
+        Map articleFromPocket = [
+                item_id: 'INGESTED_1',
+                resolved_id: 'INGESTED_1',
+                given_url: 'URL_1',
+                time_added: '1',
+                time_updated: '2',
+                time_favorited: '3',
+                time_read: '4',
+                word_count: '5'
+        ]
 
+        when:
+        Article actual = articlesService.upsertFromPocket(userId, articleFromPocket)
+        actual = mongoTemplate.find(query(where('id').is(actual.id)), Article).first()
+
+        then:
+        with(actual) {
+            id != null
+            userId == 'TEST_USER_1'
+            basicCard.actual == false
+            basicCard.id == id
+            fromPocket.item_id == 'INGESTED_1'
+            fromPocket.resolved_id == 'INGESTED_1'
+            fromPocket.given_url == 'URL_1'
+            fromPocket.time_added == '1'
+            fromPocket.time_updated == '2'
+            fromPocket.time_favorited == '3'
+            fromPocket.time_read == '4'
+            fromPocket.word_count == '5'
+        }
     }
 
-    @Ignore
     def 'Article upsertFromPocket(String userId, Map articleFromPocket) - already ingested article'() {
+        setup:
+        String userId = 'TEST_USER_1'
+        Map articleFromPocket = [
+                item_id: 'ALREADY_INGESTED_1',
+                resolved_id: 'ALREADY_INGESTED_1',
+                given_url: 'URL_1',
+                time_added: '1',
+                time_updated: '2',
+                time_favorited: '3',
+                time_read: '4',
+                word_count: '5'
+        ]
+        Article alreadyIngested = Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'ALREADY_INGESTED_1', resolved_title: 'TITLE_1', read: '0', word_count: 100, time_added: 1 ]).build()
 
+        and:
+        mongoTemplate.save(alreadyIngested)
+
+        when:
+        Article actual = articlesService.upsertFromPocket(userId, articleFromPocket)
+        actual = mongoTemplate.find(query(where('id').is(actual.id)), Article).first()
+
+        then:
+        with(actual) {
+            id == 'TEST_ARTICLE_1'
+            userId == 'TEST_USER_1'
+            basicCard.actual == false
+            basicCard.id == 'TEST_ARTICLE_1'
+            fromPocket.item_id == 'ALREADY_INGESTED_1'
+            fromPocket.resolved_id == 'ALREADY_INGESTED_1'
+            fromPocket.given_url == 'URL_1'
+            fromPocket.time_added == '1'
+            fromPocket.time_updated == '2'
+            fromPocket.time_favorited == '3'
+            fromPocket.time_read == '4'
+            fromPocket.word_count == '5'
+        }
     }
 
-    @Ignore
     def 'Article upsertFromPocket(String userId, Map articleFromPocket) - empty article'() {
+        setup:
+        String userId = 'TEST_USER_1'
+        Map articleFromPocket = [
+                item_id: 'INGESTED_1'
+        ]
 
+        when:
+        Article actual = articlesService.upsertFromPocket(userId, articleFromPocket)
+        actual = mongoTemplate.find(query(where('id').is(actual.id)), Article).first()
+
+        then:
+        with(actual) {
+            id != null
+            userId == 'TEST_USER_1'
+            basicCard.actual == false
+            basicCard.id == id
+            fromPocket.item_id == 'INGESTED_1'
+        }
+    }
+
+    def 'Article upsertFromPocket(String userId, Map articleFromPocket) - error'() {
+        setup:
+        String userId = 'TEST_USER_1'
+        Map articleFromPocket = [
+                item_id: 'INGESTED_1',
+                resolved_id: 'INGESTED_1',
+                given_url: 'URL_1',
+                time_added: 'yesterday',
+                time_updated: '2',
+                time_favorited: '3',
+                time_read: '4',
+                word_count: '5'
+        ]
+
+        when:
+        articlesService.upsertFromPocket(userId, articleFromPocket)
+
+        then:
+        thrown(RuntimeException)
     }
 }
