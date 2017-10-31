@@ -95,17 +95,22 @@ class ArticlesService {
             }
 
             article.fromPocket = articleFromPocket
-            article.fromPocket.time_added = Long.parseLong(article.fromPocket.time_added)
-            article.fromPocket.time_updated = Long.parseLong(article.fromPocket.time_updated)
-            article.fromPocket.time_favorited = Long.parseLong(article.fromPocket.time_favorited)
-            article.fromPocket.time_read = Long.parseLong(article.fromPocket.time_read)
-            article.fromPocket.word_count = Long.parseLong(article.fromPocket.word_count)
+            if (article.fromPocket.time_added != null) article.fromPocket.time_added = Long.parseLong(article.fromPocket.time_added)
+            if (article.fromPocket.time_updated != null) article.fromPocket.time_updated = Long.parseLong(article.fromPocket.time_updated)
+            if (article.fromPocket.time_favorited != null) article.fromPocket.time_favorited = Long.parseLong(article.fromPocket.time_favorited)
+            if (article.fromPocket.time_read != null) article.fromPocket.time_read = Long.parseLong(article.fromPocket.time_read)
+            if (article.fromPocket.word_count != null) article.fromPocket.word_count = Long.parseLong(article.fromPocket.word_count)
 
             if (article.basicCard == null) article.basicCard = [:]
             article.basicCard.id = article.id
             article.basicCard.actual = false
 
             mongoTemplate.save(article)
+
+            if (article.basicCard.id == null) {
+                article.basicCard.id = article.id
+                mongoTemplate.save(article)
+            }
 
             return article
         } catch (e) {
