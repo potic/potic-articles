@@ -278,11 +278,11 @@ class ArticlesServiceIntegrationTest extends Specification {
             fromPocket.item_id == 'INGESTED_1'
             fromPocket.resolved_id == 'INGESTED_1'
             fromPocket.given_url == 'URL_1'
-            fromPocket.time_added == '1'
-            fromPocket.time_updated == '2'
-            fromPocket.time_favorited == '3'
-            fromPocket.time_read == '4'
-            fromPocket.word_count == '5'
+            fromPocket.time_added == 1
+            fromPocket.time_updated == 2
+            fromPocket.time_favorited == 3
+            fromPocket.time_read == 4
+            fromPocket.word_count == 5
         }
     }
 
