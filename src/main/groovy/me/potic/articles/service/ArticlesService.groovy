@@ -40,7 +40,7 @@ class ArticlesService {
         try {
             Criteria[] criteria = []
             criteria += where('userId').is(user.id)
-            criteria += where('fromPocket.read').ne('1')
+            criteria += where('fromPocket.status').ne('1')
             if (cursorId != null) {
                 Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
                 criteria += where('fromPocket.time_added').lt(cursorArticle.fromPocket.time_added)
@@ -75,7 +75,7 @@ class ArticlesService {
                 request.uri.path = "/archive/${user.pocketAccessToken}/${readArticle.fromPocket.item_id}"
             }
 
-            mongoTemplate.updateFirst(query(where('id').is(articleId)), update('fromPocket.read', '1'), Article)
+            mongoTemplate.updateFirst(query(where('id').is(articleId)), update('fromPocket.status', '1'), Article)
         } catch (e) {
             log.error "marking article $articleId as read for user $user.id failed: $e.message", e
             throw new RuntimeException("marking article $articleId as read for user $user.id failed: $e.message", e)
