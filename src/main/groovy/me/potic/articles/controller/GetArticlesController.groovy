@@ -35,7 +35,7 @@ class GetArticlesController {
 
         try {
             User user = userService.findUserByAuth0Token(principal.token)
-            Collection<Article> response = articlesService.getUserUnreadArticles(user, cursorId, count, minLength, maxLength)
+            Collection<Article> response = articlesService.getUserUnreadArticles(user.id, cursorId, count, minLength, maxLength)
 
             log.debug "user ${user} requested unread articles, got ${response}"
 

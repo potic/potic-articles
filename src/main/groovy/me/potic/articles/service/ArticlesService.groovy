@@ -34,12 +34,12 @@ class ArticlesService {
     }
 
     @Timed(name = 'getUserUnreadArticles')
-    List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, Integer minLength, Integer maxLength) {
-        log.info "getting $count unread articles for user $user.id starting from $cursorId with length between $minLength and $maxLength"
+    List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
+        log.info "getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength"
 
         try {
             Criteria[] criteria = []
-            criteria += where('userId').is(user.id)
+            criteria += where('userId').is(userId)
             criteria += where('fromPocket.status').ne('1')
             if (cursorId != null) {
                 Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
@@ -55,13 +55,15 @@ class ArticlesService {
 
             criteria += where('basicCard.actual').is(true)
 
-            return mongoTemplate.find(
-                    query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added')).limit(count),
-                    Article
-            )
+            def query = query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added'))
+            if (count != null) {
+                query = query.limit(count)
+            }
+
+            return mongoTemplate.find(query, Article)
         } catch (e) {
-            log.error "getting $count unread articles for user $user.id starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e
-            throw new RuntimeException("getting $count unread articles for user $user.id starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e)
+            log.error "getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e
+            throw new RuntimeException("getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e)
         }
     }
 

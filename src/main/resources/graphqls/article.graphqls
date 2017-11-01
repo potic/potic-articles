@@ -1,0 +1,8 @@
+type Query {
+    unread(userId: String!, cursorId: String, count: Int, minLength: Int, maxLength: Int): [Article]!
+}
+
+type Article {
+    id: ID!
+    userId: String!
+}
