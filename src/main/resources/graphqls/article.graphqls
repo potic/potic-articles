@@ -5,4 +5,73 @@ type Query {
 type Article {
     id: ID!
     userId: String!
+    fromPocket: PocketArticle
+    basicCard: BasicCard
+}
+
+type PocketArticle {
+    item_id: String!
+    resolved_id: String
+    sort_id: Int
+
+    status: String!
+
+    given_url: String
+    resolved_url: String
+
+    given_title: String
+    resolved_title: String
+
+    time_added: Int
+    time_updated: Int
+    time_read: Int
+    time_favorited: Int
+
+    favorite: String
+
+    is_article: String
+    excerpt: String
+    word_count: String
+
+    has_image: String
+    image: PocketImage
+    images: [PocketImage]
+
+    has_video: String
+    is_index: String
+}
+
+type PocketImage {
+    image_id: String
+    item_id: String
+
+    src: String
+
+    caption: String
+    credit: String
+
+    height: String
+    width: String
+}
+
+type BasicCard {
+    id: ID!
+
+    pocketId: String!
+
+    actual: Boolean!
+
+    url: String!
+
+    title: String!
+
+    source: String!
+
+    excerpt: String
+
+    image: CardImage
+}
+
+type CardImage {
+    src: String!
 }

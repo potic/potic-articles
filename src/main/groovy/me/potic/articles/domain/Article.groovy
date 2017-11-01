@@ -13,7 +13,7 @@ class Article {
 
     String userId
 
-    Map<String, Object> fromPocket
+    PocketArticle fromPocket
 
-    Map<String, Object> basicCard
+    BasicCard basicCard
 }
