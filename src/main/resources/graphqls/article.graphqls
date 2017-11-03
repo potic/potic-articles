@@ -1,5 +1,13 @@
 type Query {
     unread(userId: String!, cursorId: String, count: Int, minLength: Int, maxLength: Int): [Article]!
+
+    withNonActualBasicCard(count: Int): [Article]!
+}
+
+type Mutation {
+    update(article: Article): Article!
+    upsertFromPocket(userId: String!, fromPocket: PocketArticle!): Article!
+    markAsRead(userId: String!, articleId: String!): Article!
 }
 
 type Article {
@@ -22,10 +30,10 @@ type PocketArticle {
     given_title: String
     resolved_title: String
 
-    time_added: Int
-    time_updated: Int
-    time_read: Int
-    time_favorited: Int
+    time_added: Long
+    time_updated: Long
+    time_read: Long
+    time_favorited: Long
 
     favorite: String
 

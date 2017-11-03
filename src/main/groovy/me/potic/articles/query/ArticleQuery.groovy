@@ -24,4 +24,15 @@ class ArticleQuery implements GraphQLQueryResolver {
             throw new RuntimeException("graphql query unread(userId=${userId}, cursorId=${cursorId}, count=${count}, minLength=${minLength}, maxLength=${maxLength}) failed: $e.message", e)
         }
     }
+
+    List<Article> getWithNonActualBasicCard(Integer count) {
+        log.info "receive graphql query withNonActualBasicCard(count=${count})"
+
+        try {
+            return articlesService.findWithNonActualBasicCard(count)
+        } catch (e) {
+            log.error "graphql query withNonActualBasicCard(count=${count}) failed: $e.message", e
+            throw new RuntimeException("graphql query withNonActualBasicCard(count=${count}) failed: $e.message", e)
+        }
+    }
 }
