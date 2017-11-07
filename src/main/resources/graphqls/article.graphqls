@@ -20,6 +20,7 @@ type PocketArticle {
 
     given_url: String
     resolved_url: String
+    amp_url: String
 
     given_title: String
     resolved_title: String
@@ -40,6 +41,10 @@ type PocketArticle {
     images: [PocketImage]
 
     has_video: String
+    videos: [PocketVideo]
+
+    authors: [PocketAuthor]
+
     is_index: String
 }
 
@@ -54,6 +59,28 @@ type PocketImage {
 
     height: String
     width: String
+}
+
+type PocketAuthor {
+    author_id: String
+    item_id: String
+
+    name: String
+
+    url: String
+}
+
+type PocketVideo {
+    video_id: String
+    item_id: String
+
+    src: String
+
+    height: String
+    width: String
+
+    vid: String
+    type: String
 }
 
 type BasicCard {

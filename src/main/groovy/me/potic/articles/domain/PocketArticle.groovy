@@ -15,6 +15,7 @@ class PocketArticle {
 
     String given_url
     String resolved_url
+    String amp_url
 
     String given_title
     String resolved_title
@@ -34,6 +35,10 @@ class PocketArticle {
     PocketImage image
     List<PocketImage> images
 
+    List<PocketAuthor> authors
+
     String has_video
+    List<PocketVideo> videos
+
     String is_index
 }
