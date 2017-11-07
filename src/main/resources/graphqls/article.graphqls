@@ -4,12 +4,6 @@ type Query {
     withNonActualBasicCard(count: Int): [Article]!
 }
 
-type Mutation {
-    update(article: Article): Article!
-    upsertFromPocket(userId: String!, fromPocket: PocketArticle!): Article!
-    markAsRead(userId: String!, articleId: String!): Article!
-}
-
 type Article {
     id: ID!
     userId: String!
