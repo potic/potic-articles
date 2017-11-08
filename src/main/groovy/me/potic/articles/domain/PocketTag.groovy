@@ -5,16 +5,8 @@ import groovy.transform.ToString
 
 @EqualsAndHashCode
 @ToString(includeNames = true)
-class PocketImage {
+class PocketTag {
 
-    String image_id
     String item_id
-
-    String src
-
-    String caption
-    String credit
-
-    String height
-    String width
+    String tag
 }

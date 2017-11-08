@@ -45,6 +45,8 @@ type PocketArticle {
 
     authors: [PocketAuthor]
 
+    tags: [PocketTag]
+
     is_index: String
 }
 
@@ -81,6 +83,11 @@ type PocketVideo {
 
     vid: String
     type: String
+}
+
+type PocketTag {
+    item_id: String
+    tag: String
 }
 
 type BasicCard {
