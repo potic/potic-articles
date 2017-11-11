@@ -166,6 +166,10 @@ class ArticlesService {
         log.info "updating article ${article}..."
 
         try {
+            Article existing = findArticle(article.id)
+            if (article.userId == null) article.userId = existing.userId
+            if (article.fromPocket == null) article.fromPocket = existing.fromPocket
+            if (article.basicCard == null) article.basicCard = existing.basicCard
             mongoTemplate.save(article)
             return article
         } catch (e) {
