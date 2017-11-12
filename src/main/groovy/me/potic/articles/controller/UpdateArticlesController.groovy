@@ -1,6 +1,5 @@
 package me.potic.articles.controller
 
-import com.codahale.metrics.annotation.Timed
 import groovy.util.logging.Slf4j
 import me.potic.articles.domain.Article
 import me.potic.articles.domain.PocketArticle
@@ -20,7 +19,6 @@ class UpdateArticlesController {
     @Autowired
     UserService userService
 
-    @Timed(name = 'user.article.markAsRead.POST')
     @PostMapping(path = '/user/{userId}/article/{articleId}/markAsRead')
     void markArticleAsRead(@PathVariable String userId, @PathVariable String articleId) {
         log.info "receive POST request for /user/$userId/article/$articleId/markAsRead"
@@ -34,7 +32,6 @@ class UpdateArticlesController {
         }
     }
 
-    @Timed(name = 'user.article.fromPocket.POST')
     @PostMapping(path = '/user/{userId}/article/fromPocket')
     void upsertFromPocket(@PathVariable String userId, @RequestBody PocketArticle articleFromPocket) {
         log.info "receive POST request for /user/${userId}/article/fromPocket; BODY=${articleFromPocket}"
@@ -47,7 +44,6 @@ class UpdateArticlesController {
         }
     }
 
-    @Timed(name = 'user.article.PUT')
     @PutMapping(path = '/article')
     void updateArticle(@RequestBody Article article) {
         log.info "receive PUT request for /article; BODY=${article}"

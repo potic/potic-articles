@@ -7,7 +7,7 @@ import org.springframework.data.annotation.Id
 
 @Builder
 @EqualsAndHashCode
-@ToString
+@ToString(includeNames = true)
 class Article {
 
     @Id
@@ -17,5 +17,5 @@ class Article {
 
     PocketArticle fromPocket
 
-    BasicCard basicCard
+    Card card
 }

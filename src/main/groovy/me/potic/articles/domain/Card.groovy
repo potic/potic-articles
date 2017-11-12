@@ -4,8 +4,8 @@ import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
 
 @EqualsAndHashCode
-@ToString
-class BasicCard {
+@ToString(includeNames = true)
+class Card {
 
     String id
 

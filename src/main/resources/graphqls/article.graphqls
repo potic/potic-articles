@@ -8,7 +8,7 @@ type Article {
     id: ID!
     userId: String!
     fromPocket: PocketArticle
-    basicCard: BasicCard
+    card: Card
 }
 
 type PocketArticle {
@@ -90,7 +90,7 @@ type PocketTag {
     tag: String
 }
 
-type BasicCard {
+type Card {
     id: ID!
 
     pocketId: String!
