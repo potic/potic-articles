@@ -20,13 +20,12 @@ class UserServiceIntegrationTest extends Specification {
     @Autowired
     UserService userService
 
-    def 'String findUserIdByAuth0Token(String auth0Token)'(){
+    def 'User findUserById(String id)'(){
         setup: 'mock servers'
         ErsatzServer ersatz = new ErsatzServer()
         ersatz.expectations {
-            get('/user/me') {
+            get('/user/USER_ID_28') {
                 called equalTo(1)
-                header 'Authorization', equalTo('Bearer TEST_TOKEN_28')
                 responder {
                     content '{ "id": "USER_ID_28", "socialIds": [ "google-oauth2|28" ], "pocketAccessToken": "POCKET_TOKEN_28" }','application/json'
                 }
@@ -38,7 +37,7 @@ class UserServiceIntegrationTest extends Specification {
         userService.usersServiceRest(ersatz.httpUrl)
 
         when: 'find userId by auth0 token'
-        User actualUser = userService.findUserByAuth0Token('TEST_TOKEN_28')
+        User actualUser = userService.findUserById('USER_ID_28')
 
         then: 'expected token is returned'
         actualUser.id == 'USER_ID_28'
@@ -52,13 +51,12 @@ class UserServiceIntegrationTest extends Specification {
         ersatz.stop()
     }
 
-    def 'String findUserIdByAuth0Token(String auth0Token) - results are cached'(){
+    def 'User findUserById(String id) - results are cached'(){
         setup: 'mock servers'
         ErsatzServer ersatz = new ErsatzServer()
         ersatz.expectations {
-            get('/user/me') {
+            get('/user/USER_ID_43') {
                 called equalTo(1)
-                header 'Authorization', equalTo('Bearer TEST_TOKEN_43')
                 responder {
                     content '{ "id": "USER_ID_43", "socialIds": [ "google-oauth2|43" ], "pocketAccessToken": "POCKET_TOKEN_43" }','application/json'
                 }
@@ -70,7 +68,7 @@ class UserServiceIntegrationTest extends Specification {
         userService.usersServiceRest(ersatz.httpUrl)
 
         when: 'fetch userId by auth0 token first time'
-        User actualUser1 = userService.findUserByAuth0Token('TEST_TOKEN_43')
+        User actualUser1 = userService.findUserById('USER_ID_43')
 
         then: 'expected token is returned'
         actualUser1.id == 'USER_ID_43'
@@ -78,7 +76,7 @@ class UserServiceIntegrationTest extends Specification {
         actualUser1.pocketAccessToken == "POCKET_TOKEN_43"
 
         when: 'fetch userId by auth0 token second time'
-        User actualUser2 = userService.findUserByAuth0Token('TEST_TOKEN_43')
+        User actualUser2 = userService.findUserById('USER_ID_43')
 
         then: 'expected token is returned'
         actualUser2.id == 'USER_ID_43'
@@ -92,13 +90,12 @@ class UserServiceIntegrationTest extends Specification {
         ersatz.stop()
     }
 
-    def 'String findUserIdByAuth0Token(String auth0Token) - cached results are expiring'(){
+    def 'User findUserById(String id) - cached results are expiring'(){
         setup: 'mock servers'
         ErsatzServer ersatz = new ErsatzServer()
         ersatz.expectations {
-            get('/user/me') {
+            get('/user/USER_ID_17') {
                 called equalTo(2)
-                header 'Authorization', equalTo('Bearer TEST_TOKEN_17')
                 responder {
                     content '{ "id": "USER_ID_17", "socialIds": [ "google-oauth2|17" ], "pocketAccessToken": "POCKET_TOKEN_17" }','application/json'
                 }
@@ -115,7 +112,7 @@ class UserServiceIntegrationTest extends Specification {
         userService.cachedUsers(ticker)
 
         when: 'fetch userId by auth0 token first time'
-        User actualUser1 = userService.findUserByAuth0Token('TEST_TOKEN_17')
+        User actualUser1 = userService.findUserById('USER_ID_17')
 
         then: 'expected token is returned'
         actualUser1.id == 'USER_ID_17'
@@ -123,7 +120,7 @@ class UserServiceIntegrationTest extends Specification {
         actualUser1.pocketAccessToken == "POCKET_TOKEN_17"
 
         when: 'two days passed, fetch userId by auth0 token second time'
-        User actualUser2 = userService.findUserByAuth0Token('TEST_TOKEN_17')
+        User actualUser2 = userService.findUserById('USER_ID_17')
 
         then: 'expected token is returned'
         actualUser2.id == 'USER_ID_17'

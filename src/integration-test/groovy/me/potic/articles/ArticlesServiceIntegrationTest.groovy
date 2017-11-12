@@ -3,6 +3,8 @@ package me.potic.articles
 import com.mongodb.Mongo
 import com.stehno.ersatz.ErsatzServer
 import me.potic.articles.domain.Article
+import me.potic.articles.domain.Card
+import me.potic.articles.domain.PocketArticle
 import me.potic.articles.domain.User
 import me.potic.articles.service.ArticlesService
 import org.junit.Rule
@@ -40,28 +42,27 @@ class ArticlesServiceIntegrationTest extends Specification {
         articlesService.mongoTemplate = mongoTemplate
 
         List articles = [
-                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_1', resolved_title: 'TITLE_1', status: '0', word_count: 100, time_added: 1 ]).build(),
-                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_2', resolved_title: 'TITLE_2', status: '0', word_count: 200, time_added: 2 ]).build(),
-                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_3', resolved_title: 'TITLE_3', status: '0', word_count: 300, time_added: 3 ]).build(),
-                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_4', resolved_title: 'TITLE_4', status: '1', word_count: 100, time_added: 4 ]).build(),
-                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_5', resolved_title: 'TITLE_5', status: '0', word_count: 200, time_added: 5 ]).build(),
-                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').basicCard([ actual: true ]).fromPocket([ item_id: 'POCKET_6', resolved_title: 'TITLE_6', status: '1', word_count: 100, time_added: 6 ]).build(),
+                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_1', resolved_title: 'TITLE_1', status: '0', word_count: 100, time_added: 1)).build(),
+                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_2', resolved_title: 'TITLE_2', status: '0', word_count: 200, time_added: 2)).build(),
+                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_3', resolved_title: 'TITLE_3', status: '0', word_count: 300, time_added: 3)).build(),
+                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_4', resolved_title: 'TITLE_4', status: '1', word_count: 100, time_added: 4)).build(),
+                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_5', resolved_title: 'TITLE_5', status: '0', word_count: 200, time_added: 5)).build(),
+                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_6', resolved_title: 'TITLE_6', status: '1', word_count: 100, time_added: 6)).build(),
 
                 // same articles but non-actual
-                Article.builder().id('TEST_ARTICLE_01').userId('TEST_USER_1').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_1', status: '0', word_count: 100, time_added: 1 ]).build(),
-                Article.builder().id('TEST_ARTICLE_02').userId('TEST_USER_1').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_2', status: '0', word_count: 200, time_added: 2 ]).build(),
-                Article.builder().id('TEST_ARTICLE_03').userId('TEST_USER_1').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_3', status: '0', word_count: 300, time_added: 3 ]).build(),
-                Article.builder().id('TEST_ARTICLE_04').userId('TEST_USER_1').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_4', status: '1', word_count: 100, time_added: 4 ]).build(),
-                Article.builder().id('TEST_ARTICLE_05').userId('TEST_USER_2').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_5', status: '0', word_count: 200, time_added: 5 ]).build(),
-                Article.builder().id('TEST_ARTICLE_06').userId('TEST_USER_2').basicCard([ actual: false ]).fromPocket([ item_id: 'POCKET_6', status: '1', word_count: 100, time_added: 6 ]).build()
+                Article.builder().id('TEST_ARTICLE_01').userId('TEST_USER_1').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_1', status: '0', word_count: 100, time_added: 1)).build(),
+                Article.builder().id('TEST_ARTICLE_02').userId('TEST_USER_1').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_2', status: '0', word_count: 200, time_added: 2)).build(),
+                Article.builder().id('TEST_ARTICLE_03').userId('TEST_USER_1').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_3', status: '0', word_count: 300, time_added: 3)).build(),
+                Article.builder().id('TEST_ARTICLE_04').userId('TEST_USER_1').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_4', status: '1', word_count: 100, time_added: 4)).build(),
+                Article.builder().id('TEST_ARTICLE_05').userId('TEST_USER_2').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_5', status: '0', word_count: 200, time_added: 5)).build(),
+                Article.builder().id('TEST_ARTICLE_06').userId('TEST_USER_2').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_6', status: '1', word_count: 100, time_added: 6)).build()
         ]
         mongoTemplate.insert(articles, Article)
     }
 
-    def 'List<Article> getUserUnreadArticles(User user, cursorId = null, Integer count, minLength = null, maxLength = null)'() {
+    def 'List<Article> getUserUnreadArticles(String userId, cursorId = null, Integer count, minLength = null, maxLength = null)'() {
         when:
-        User user1 = new User(id: 'TEST_USER_1')
-        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 10, null, null)
+        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, null, null)
 
         then:
         articles.size() == 3
@@ -69,7 +70,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_3'
             userId == 'TEST_USER_1'
-            basicCard.actual == true
+            card.actual == true
             fromPocket.status == '0'
             fromPocket.word_count == 300
             fromPocket.time_added == 3
@@ -78,7 +79,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[1]) {
             id == 'TEST_ARTICLE_2'
             userId == 'TEST_USER_1'
-            basicCard.actual == true
+            card.actual == true
             fromPocket.status == '0'
             fromPocket.word_count == 200
             fromPocket.time_added == 2
@@ -87,17 +88,16 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[2]) {
             id == 'TEST_ARTICLE_1'
             userId == 'TEST_USER_1'
-            basicCard.actual == true
+            card.actual == true
             fromPocket.status == '0'
             fromPocket.word_count == 100
             fromPocket.time_added == 1
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(User user, cursorId = null, Integer count, minLength = null, maxLength = null) - limit count'() {
+    def 'List<Article> getUserUnreadArticles(String userId, cursorId = null, Integer count, minLength = null, maxLength = null) - limit count'() {
         when:
-        User user1 = new User(id: 'TEST_USER_1')
-        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 1, null, null)
+        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 1, null, null)
 
         then:
         articles.size() == 1
@@ -105,17 +105,16 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_3'
             userId == 'TEST_USER_1'
-            basicCard.actual == true
+            card.actual == true
             fromPocket.status == '0'
             fromPocket.word_count == 300
             fromPocket.time_added == 3
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, minLength = null, maxLength = null)'() {
+    def 'List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, minLength = null, maxLength = null)'() {
         when:
-        User user1 = new User(id: 'TEST_USER_1')
-        List<Article> articles = articlesService.getUserUnreadArticles(user1, 'TEST_ARTICLE_2', 1, null, null)
+        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', 'TEST_ARTICLE_2', 1, null, null)
 
         then:
         articles.size() == 1
@@ -123,17 +122,16 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_1'
             userId == 'TEST_USER_1'
-            basicCard.actual == true
+            card.actual == true
             fromPocket.status == '0'
             fromPocket.word_count == 100
             fromPocket.time_added == 1
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, Integer minLength, maxLength = null)'() {
+    def 'List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, Integer minLength, maxLength = null)'() {
         when:
-        User user1 = new User(id: 'TEST_USER_1')
-        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 10, 250, null)
+        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, 250, null)
 
         then:
         articles.size() == 1
@@ -141,17 +139,16 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_3'
             userId == 'TEST_USER_1'
-            basicCard.actual == true
+            card.actual == true
             fromPocket.status == '0'
             fromPocket.word_count == 300
             fromPocket.time_added == 3
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, minLength = null, Integer maxLength)'() {
+    def 'List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, minLength = null, Integer maxLength)'() {
         when:
-        User user1 = new User(id: 'TEST_USER_1')
-        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 10, null, 150)
+        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, null, 150)
 
         then:
         articles.size() == 1
@@ -159,17 +156,16 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_1'
             userId == 'TEST_USER_1'
-            basicCard.actual == true
+            card.actual == true
             fromPocket.status == '0'
             fromPocket.word_count == 100
             fromPocket.time_added == 1
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, Integer minLength, Integer maxLength)'() {
+    def 'List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, Integer minLength, Integer maxLength)'() {
         when:
-        User user1 = new User(id: 'TEST_USER_1')
-        List<Article> articles = articlesService.getUserUnreadArticles(user1, null, 10, 150, 250)
+        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, 150, 250)
 
         then:
         articles.size() == 1
@@ -177,7 +173,7 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(articles[0]) {
             id == 'TEST_ARTICLE_2'
             userId == 'TEST_USER_1'
-            basicCard.actual == true
+            card.actual == true
             fromPocket.status == '0'
             fromPocket.word_count == 200
             fromPocket.time_added == 2
@@ -251,19 +247,19 @@ class ArticlesServiceIntegrationTest extends Specification {
         ersatz.stop()
     }
 
-    def 'Article upsertFromPocket(String userId, Map articleFromPocket) - new article'() {
+    def 'Article upsertFromPocket(String userId, PocketArticle articleFromPocket) - new article'() {
         setup:
         String userId = 'TEST_USER_1'
-        Map articleFromPocket = [
+        PocketArticle articleFromPocket = new PocketArticle(
                 item_id: 'INGESTED_1',
                 resolved_id: 'INGESTED_1',
                 given_url: 'URL_1',
-                time_added: '1',
-                time_updated: '2',
-                time_favorited: '3',
-                time_read: '4',
-                word_count: '5'
-        ]
+                time_added: 1,
+                time_updated: 2,
+                time_favorited: 3,
+                time_read: 4,
+                word_count: 5
+        )
 
         when:
         Article actual = articlesService.upsertFromPocket(userId, articleFromPocket)
@@ -273,8 +269,8 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(actual) {
             id != null
             userId == 'TEST_USER_1'
-            basicCard.actual == false
-            basicCard.id == id
+            card.actual == false
+            card.id == id
             fromPocket.item_id == 'INGESTED_1'
             fromPocket.resolved_id == 'INGESTED_1'
             fromPocket.given_url == 'URL_1'
@@ -286,20 +282,20 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'Article upsertFromPocket(String userId, Map articleFromPocket) - already ingested article'() {
+    def 'Article upsertFromPocket(String userId, PocketArticle articleFromPocket) - already ingested article'() {
         setup:
         String userId = 'TEST_USER_1'
-        Map articleFromPocket = [
+        PocketArticle articleFromPocket = new PocketArticle(
                 item_id: 'ALREADY_INGESTED_1',
                 resolved_id: 'ALREADY_INGESTED_1',
                 given_url: 'URL_1',
-                time_added: '1',
-                time_updated: '2',
-                time_favorited: '3',
-                time_read: '4',
-                word_count: '5'
-        ]
-        Article alreadyIngested = Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').basicCard([ actual: true ]).fromPocket([ item_id: 'ALREADY_INGESTED_1', resolved_title: 'TITLE_1', status: '0', word_count: 100, time_added: 1 ]).build()
+                time_added: 1,
+                time_updated: 2,
+                time_favorited: 3,
+                time_read: 4,
+                word_count: 5
+        )
+        Article alreadyIngested = Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'ALREADY_INGESTED_1', resolved_title: 'TITLE_1', status: '0', word_count: 100, time_added: 1)).build()
 
         and:
         mongoTemplate.save(alreadyIngested)
@@ -312,8 +308,8 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(actual) {
             id == 'TEST_ARTICLE_1'
             userId == 'TEST_USER_1'
-            basicCard.actual == false
-            basicCard.id == 'TEST_ARTICLE_1'
+            card.actual == false
+            card.id == 'TEST_ARTICLE_1'
             fromPocket.item_id == 'ALREADY_INGESTED_1'
             fromPocket.resolved_id == 'ALREADY_INGESTED_1'
             fromPocket.given_url == 'URL_1'
@@ -325,12 +321,10 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'Article upsertFromPocket(String userId, Map articleFromPocket) - empty article'() {
+    def 'Article upsertFromPocket(String userId, PocketArticle articleFromPocket) - empty article'() {
         setup:
         String userId = 'TEST_USER_1'
-        Map articleFromPocket = [
-                item_id: 'INGESTED_1'
-        ]
+        PocketArticle articleFromPocket = new PocketArticle(item_id: 'INGESTED_1')
 
         when:
         Article actual = articlesService.upsertFromPocket(userId, articleFromPocket)
@@ -340,30 +334,9 @@ class ArticlesServiceIntegrationTest extends Specification {
         with(actual) {
             id != null
             userId == 'TEST_USER_1'
-            basicCard.actual == false
-            basicCard.id == id
+            card.actual == false
+            card.id == id
             fromPocket.item_id == 'INGESTED_1'
         }
-    }
-
-    def 'Article upsertFromPocket(String userId, Map articleFromPocket) - error'() {
-        setup:
-        String userId = 'TEST_USER_1'
-        Map articleFromPocket = [
-                item_id: 'INGESTED_1',
-                resolved_id: 'INGESTED_1',
-                given_url: 'URL_1',
-                time_added: 'yesterday',
-                time_updated: '2',
-                time_favorited: '3',
-                time_read: '4',
-                word_count: '5'
-        ]
-
-        when:
-        articlesService.upsertFromPocket(userId, articleFromPocket)
-
-        then:
-        thrown(RuntimeException)
     }
 }
