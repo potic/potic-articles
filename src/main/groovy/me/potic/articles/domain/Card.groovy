@@ -2,20 +2,24 @@ package me.potic.articles.domain
 
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
-import groovy.transform.builder.Builder
-import org.springframework.data.annotation.Id
 
-@Builder
 @EqualsAndHashCode
 @ToString(includeNames = true)
-class Article {
+class Card {
 
-    @Id
     String id
 
-    String userId
+    String pocketId
 
-    PocketArticle fromPocket
+    boolean actual
 
-    Card card
+    String url
+
+    String title
+
+    String source
+
+    String excerpt
+
+    CardImage image
 }

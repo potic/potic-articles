@@ -1,0 +1,113 @@
+type Query {
+    unread(userId: String!, cursorId: String, count: Int, minLength: Int, maxLength: Int): [Article]!
+
+    withNonActualBasicCard(count: Int): [Article]!
+}
+
+type Article {
+    id: ID!
+    userId: String!
+    fromPocket: PocketArticle
+    card: Card
+}
+
+type PocketArticle {
+    item_id: String!
+    resolved_id: String
+    sort_id: Int
+
+    status: String!
+
+    given_url: String
+    resolved_url: String
+    amp_url: String
+
+    given_title: String
+    resolved_title: String
+
+    time_added: Long
+    time_updated: Long
+    time_read: Long
+    time_favorited: Long
+
+    favorite: String
+
+    is_article: String
+    excerpt: String
+    word_count: String
+
+    has_image: String
+    image: PocketImage
+    images: [PocketImage]
+
+    has_video: String
+    videos: [PocketVideo]
+
+    authors: [PocketAuthor]
+
+    tags: [PocketTag]
+
+    is_index: String
+}
+
+type PocketImage {
+    image_id: String
+    item_id: String
+
+    src: String
+
+    caption: String
+    credit: String
+
+    height: String
+    width: String
+}
+
+type PocketAuthor {
+    author_id: String
+    item_id: String
+
+    name: String
+
+    url: String
+}
+
+type PocketVideo {
+    video_id: String
+    item_id: String
+
+    src: String
+
+    height: String
+    width: String
+
+    vid: String
+    type: String
+}
+
+type PocketTag {
+    item_id: String
+    tag: String
+}
+
+type Card {
+    id: ID!
+
+    pocketId: String!
+
+    actual: Boolean!
+
+    url: String!
+
+    title: String!
+
+    source: String!
+
+    excerpt: String
+
+    image: CardImage
+}
+
+type CardImage {
+    src: String!
+}

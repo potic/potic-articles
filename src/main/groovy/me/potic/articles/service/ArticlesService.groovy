@@ -1,9 +1,10 @@
 package me.potic.articles.service
 
-import com.codahale.metrics.annotation.Timed
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
 import me.potic.articles.domain.Article
+import me.potic.articles.domain.Card
+import me.potic.articles.domain.PocketArticle
 import me.potic.articles.domain.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -33,13 +34,12 @@ class ArticlesService {
         }
     }
 
-    @Timed(name = 'getUserUnreadArticles')
-    List<Article> getUserUnreadArticles(User user, String cursorId, Integer count, Integer minLength, Integer maxLength) {
-        log.info "getting $count unread articles for user $user.id starting from $cursorId with length between $minLength and $maxLength"
+    List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
+        log.debug "getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength"
 
         try {
             Criteria[] criteria = []
-            criteria += where('userId').is(user.id)
+            criteria += where('userId').is(userId)
             criteria += where('fromPocket.status').ne('1')
             if (cursorId != null) {
                 Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
@@ -53,38 +53,38 @@ class ArticlesService {
                 criteria += where('fromPocket.word_count').lte(maxLength)
             }
 
-            criteria += where('basicCard.actual').is(true)
+            criteria += where('card.actual').is(true)
 
-            return mongoTemplate.find(
-                    query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added')).limit(count),
-                    Article
-            )
+            def query = query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added'))
+            if (count != null) {
+                query = query.limit(count)
+            }
+
+            return mongoTemplate.find(query, Article)
         } catch (e) {
-            log.error "getting $count unread articles for user $user.id starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e
-            throw new RuntimeException("getting $count unread articles for user $user.id starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e)
+            log.error "getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e
+            throw new RuntimeException("getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e)
         }
     }
 
-    @Timed(name = 'markArticleAsRead')
     void markArticleAsRead(User user, String articleId) {
-        log.info "marking article $articleId as read for user $user.id"
+        log.debug "marking article ${articleId} as read for user ${user.id}"
 
         try {
-            Article readArticle = mongoTemplate.find(query(where('id').is(articleId)), Article).first()
+            Article readArticle = findArticle(articleId)
             pocketApiRest.post {
                 request.uri.path = "/archive/${user.pocketAccessToken}/${readArticle.fromPocket.item_id}"
             }
 
             mongoTemplate.updateFirst(query(where('id').is(articleId)), update('fromPocket.status', '1'), Article)
         } catch (e) {
-            log.error "marking article $articleId as read for user $user.id failed: $e.message", e
-            throw new RuntimeException("marking article $articleId as read for user $user.id failed: $e.message", e)
+            log.error "marking article ${articleId} as read for user ${user.id} failed: $e.message", e
+            throw new RuntimeException("marking article ${articleId} as read for user ${user.id} failed: $e.message", e)
         }
     }
 
-    @Timed(name = 'upsertFromPocket')
-    Article upsertFromPocket(String userId, Map articleFromPocket) {
-        log.info "upserting article $articleFromPocket for user $userId"
+    Article upsertFromPocket(String userId, PocketArticle articleFromPocket) {
+        log.debug "upserting article $articleFromPocket for user $userId"
 
         try {
             Article article = findAlreadyIngestedFromPocket(userId, articleFromPocket)
@@ -95,20 +95,15 @@ class ArticlesService {
             }
 
             article.fromPocket = articleFromPocket
-            if (article.fromPocket.time_added != null) article.fromPocket.time_added = Long.parseLong(article.fromPocket.time_added)
-            if (article.fromPocket.time_updated != null) article.fromPocket.time_updated = Long.parseLong(article.fromPocket.time_updated)
-            if (article.fromPocket.time_favorited != null) article.fromPocket.time_favorited = Long.parseLong(article.fromPocket.time_favorited)
-            if (article.fromPocket.time_read != null) article.fromPocket.time_read = Long.parseLong(article.fromPocket.time_read)
-            if (article.fromPocket.word_count != null) article.fromPocket.word_count = Long.parseLong(article.fromPocket.word_count)
 
-            if (article.basicCard == null) article.basicCard = [:]
-            article.basicCard.id = article.id
-            article.basicCard.actual = false
+            if (article.card == null) article.card = new Card()
+            article.card.id = article.id
+            article.card.actual = false
 
             mongoTemplate.save(article)
 
-            if (article.basicCard.id == null) {
-                article.basicCard.id = article.id
+            if (article.card.id == null) {
+                article.card.id = article.id
                 mongoTemplate.save(article)
             }
 
@@ -119,18 +114,17 @@ class ArticlesService {
         }
     }
 
-    @Timed(name = 'alreadyIngestedFromPocket')
-    Article findAlreadyIngestedFromPocket(String userId, Map articleFromPocket) {
-        log.info "checking if article for user $userId was already ingested from pocket"
+    Article findAlreadyIngestedFromPocket(String userId, PocketArticle articleFromPocket) {
+        log.debug "checking if article ${articleFromPocket} for user $userId was already ingested from pocket"
 
         try {
             List<Article> candidates = mongoTemplate.find(query(
                     new Criteria().andOperator(
                             where('userId').is(userId),
                             new Criteria().orOperator(
-                                    where('fromPocket.item_id').is(articleFromPocket['item_id']),
-                                    where('fromPocket.resolved_id').is(articleFromPocket['resolved_id']),
-                                    where('fromPocket.given_url').is(articleFromPocket['given_url'])
+                                    where('fromPocket.item_id').is(articleFromPocket.item_id),
+                                    where('fromPocket.resolved_id').is(articleFromPocket.resolved_id),
+                                    where('fromPocket.given_url').is(articleFromPocket.given_url)
                             )
                     )
             ), Article)
@@ -142,29 +136,33 @@ class ArticlesService {
             Article tieBreakCandidate = null
 
             for (Article candidate : candidates) {
-                if (candidate['fromPocket']['item_id'] == articleFromPocket['item_id']) {
+                if (candidate.fromPocket.item_id == articleFromPocket.item_id) {
                     return candidate
                 }
-                if (candidate['fromPocket']['resolved_id'] == articleFromPocket['resolved_id']) {
+                if (candidate.fromPocket.resolved_id == articleFromPocket.resolved_id) {
                     return candidate
                 }
-                if (candidate['fromPocket']['given_url'] == articleFromPocket['given_url']) {
+                if (candidate.fromPocket.given_url == articleFromPocket.given_url) {
                     tieBreakCandidate = candidate
                 }
             }
 
             return tieBreakCandidate
         } catch (e) {
-            log.error "checking if article for user $userId was already ingested from pocket failed: $e.message", e
-            throw new RuntimeException("checking if article for user $userId was already ingested from pocket failed: $e.message", e)
+            log.error "checking if article ${articleFromPocket} for user $userId was already ingested from pocket failed: $e.message", e
+            throw new RuntimeException("checking if article ${articleFromPocket} for user $userId was already ingested from pocket failed: $e.message", e)
         }
     }
 
-    @Timed(name = 'updateArticle')
     void updateArticle(Article article) {
-        log.info "updating article ${article}..."
+        log.debug "updating article ${article}..."
 
         try {
+            Article existing = findArticle(article.id)
+            if (article.userId == null) article.userId = existing.userId
+            if (article.fromPocket == null) article.fromPocket = existing.fromPocket
+            if (article.card == null) article.card = existing.card
+
             mongoTemplate.save(article)
         } catch (e) {
             log.error "updating article ${article} failed: $e.message", e
@@ -172,14 +170,13 @@ class ArticlesService {
         }
     }
 
-    @Timed(name = 'findNonActualArticles')
-    Collection<Article> findNonActualArticles(String groupName, Integer count) {
-        log.info "getting $count non-actual articles for group $groupName..."
+    Collection<Article> findWithNonActualCard(Integer count) {
+        log.debug "getting $count articles with non-actual card..."
 
         try {
             Query query = query(new Criteria().andOperator(
                     where('fromPocket').ne(null),
-                    new Criteria().orOperator(where('basicCard.actual').is(null), where('basicCard.actual').is(false))
+                    new Criteria().orOperator(where('card.actual').is(null), where('card.actual').is(false))
             ))
 
             if (count != null) {
@@ -188,8 +185,12 @@ class ArticlesService {
 
             return mongoTemplate.find(query, Article)
         } catch (e) {
-            log.error "getting $count non-actual articles for group $groupName failed: $e.message", e
-            throw new RuntimeException("getting $count non-actual articles for group $groupName failed: $e.message", e)
+            log.error "getting $count articles with non-actual card failed: $e.message", e
+            throw new RuntimeException("getting $count articles with non-actual card failed: $e.message", e)
         }
+    }
+
+    private Article findArticle(String id) {
+        mongoTemplate.find(query(where('id').is(id)), Article).first()
     }
 }
