@@ -1,7 +1,7 @@
 type Query {
     unread(userId: String!, cursorId: String, count: Int, minLength: Int, maxLength: Int): [Article]!
 
-    withNonActualBasicCard(count: Int): [Article]!
+    withNonActualCard(count: Int): [Article]!
 }
 
 type Article {
