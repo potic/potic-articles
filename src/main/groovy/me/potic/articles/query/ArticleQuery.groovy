@@ -25,11 +25,11 @@ class ArticleQuery implements GraphQLQueryResolver {
         }
     }
 
-    List<Article> getWithNonActualBasicCard(Integer count) {
+    List<Article> getWithNonActualCard(Integer count) {
         log.info "receive graphql query withNonActualBasicCard(count=${count})"
 
         try {
-            return articlesService.findWithNonActualBasicCard(count)
+            return articlesService.findWithNonActualCard(count)
         } catch (e) {
             log.error "graphql query withNonActualBasicCard(count=${count}) failed: $e.message", e
             throw new RuntimeException("graphql query withNonActualBasicCard(count=${count}) failed: $e.message", e)
