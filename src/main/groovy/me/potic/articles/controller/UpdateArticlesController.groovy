@@ -19,6 +19,7 @@ class UpdateArticlesController {
     @Autowired
     UserService userService
 
+    @CrossOrigin
     @PostMapping(path = '/user/{userId}/article/{articleId}/markAsRead')
     void markArticleAsRead(@PathVariable String userId, @PathVariable String articleId) {
         log.info "receive POST request for /user/$userId/article/$articleId/markAsRead"
