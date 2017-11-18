@@ -9,6 +9,8 @@ import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 
+import java.security.Principal
+
 @RestController
 @Slf4j
 class UpdateArticlesController {
@@ -20,16 +22,16 @@ class UpdateArticlesController {
     UserService userService
 
     @CrossOrigin
-    @PostMapping(path = '/user/{userId}/article/{articleId}/markAsRead')
-    void markArticleAsRead(@PathVariable String userId, @PathVariable String articleId) {
-        log.info "receive POST request for /user/$userId/article/$articleId/markAsRead"
+    @PostMapping(path = '/user/me/article/{articleId}/markAsRead')
+    void markArticleAsRead(@PathVariable String articleId, final Principal principal) {
+        log.info "receive POST request for /user/me/$articleId/markAsRead"
 
         try {
-            User user = userService.findUserById(userId)
+            User user = userService.findUserByAuth0Token(principal.token)
             articlesService.markArticleAsRead(user, articleId)
         } catch (e) {
-            log.error "POST request for /user/$userId/article/$articleId/markAsRead failed: $e.message", e
-            throw new RuntimeException("POST request for /user/$userId/article/$articleId/markAsRead failed: $e.message", e)
+            log.error "POST request for /user/me/$articleId/markAsRead failed: $e.message", e
+            throw new RuntimeException("POST request for /user/me/$articleId/markAsRead failed: $e.message", e)
         }
     }
 

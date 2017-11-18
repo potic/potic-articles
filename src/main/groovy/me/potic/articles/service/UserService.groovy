@@ -45,39 +45,39 @@ class UserService {
 
                             @Override
                             User load(String auth0Token) {
-                                fetchUserById(auth0Token)
+                                fetchUserByAuth0Token(auth0Token)
                             }
                         }
                 )
     }
 
-    @Counted(name = 'findUserById.total')
-    User findUserById(String id) {
-        log.info "finding user with id=${id}..."
+    @Counted(name = 'findUserByAuth0Token.total')
+    User findUserByAuth0Token(String auth0Token) {
+        log.info 'finding user by auth0 token'
 
         try {
-            return cachedUsers.get(id)
+            return cachedUsers.get(auth0Token)
         } catch (e) {
-            log.error "finding user with id=${id} failed: $e.message", e
-            throw new RuntimeException("finding user with id=${id} failed", e)
+            log.error "finding user by auth0 token failed: $e.message", e
+            throw new RuntimeException('finding user by auth0 token failed', e)
         }
     }
 
-    @Counted(name = 'fetchUserById.cacheMiss')
-    @Timed(name = 'fetchUserById')
-    User fetchUserById(String id) {
-        log.info "fetching user with id=${id}..."
+    @Counted(name = 'findUserByAuth0Token.cacheMiss')
+    @Timed(name = 'fetchUserByAuth0Token')
+    User fetchUserByAuth0Token(String auth0Token) {
+        log.info 'fetching user by auth0 token'
 
         try {
             def response = usersServiceRest.get {
-                request.uri.path = "/user/${id}"
+                request.uri.path = '/user/me'
+                request.headers['Authorization'] = 'Bearer ' + auth0Token
             }
 
             return new User(response)
         } catch (e) {
-            log.error "fetching user with id=${id} failed: $e.message", e
-            throw new RuntimeException("fetching user with id=${id} failed", e)
+            log.error "fetching user by auth0 token failed: $e.message", e
+            throw new RuntimeException('fetching user by auth0 token failed', e)
         }
     }
 }
-

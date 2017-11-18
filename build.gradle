@@ -48,6 +48,8 @@ dependencies {
 
     compile 'org.springframework.data:spring-data-mongodb'
 
+    compile 'com.auth0:auth0-spring-security-api:1.0.0-rc.3'
+
     compile 'io.github.http-builder-ng:http-builder-ng-core:1.0.2'
 
     compile 'com.graphql-java:graphql-java-tools:4.1.2'
