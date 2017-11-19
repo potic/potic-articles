@@ -86,13 +86,6 @@ buildScan {
     licenseAgree = 'yes'
 }
 
-jacocoTestReport {
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
 task integrationTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
@@ -100,9 +93,22 @@ task integrationTest(type: Test) {
     testLogging {
         events "passed", "skipped", "failed"
     }
+
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/test.exec")
+    }
 }
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test
+
+jacocoTestReport {
+    executionData test, integrationTest
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
 
 tasks.withType(Test) {
     reports.html.destination = file("${reporting.baseDir}/${name}")
