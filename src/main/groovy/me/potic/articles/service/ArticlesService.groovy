@@ -6,6 +6,7 @@ import me.potic.articles.domain.Article
 import me.potic.articles.domain.Card
 import me.potic.articles.domain.PocketArticle
 import me.potic.articles.domain.User
+import org.apache.commons.lang3.RandomUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Sort
@@ -63,6 +64,38 @@ class ArticlesService {
         } catch (e) {
             log.error "getting $count latest unread articles with min length ${minLength} and max length ${maxLength} for user $userId skipping articles with ids $skipIds failed: $e.message", e
             throw new RuntimeException("getting $count latest unread articles with min length ${minLength} and max length ${maxLength} for user $userId skipping articles with ids $skipIds failed: $e.message", e)
+        }
+    }
+
+    List<Article> getRandomUserUnreadArticles(String userId, List<String> skipIds, Integer count) {
+        log.debug "getting $count random unread articles for user $userId skipping articles with ids $skipIds..."
+
+        try {
+            Criteria[] criteria = []
+            criteria += where('userId').is(userId)
+            criteria += where('fromPocket.status').ne('1')
+            if (skipIds != null && !skipIds.empty) {
+                criteria += where('id').nin(skipIds)
+            }
+
+            criteria += where('card.actual').is(true)
+
+            def query = query(new Criteria().andOperator(criteria))
+
+            int totalCount = mongoTemplate.count(query, Article)
+
+            Set<Article> randomArticles = []
+
+            while (randomArticles.size() < count) {
+                int randomSkip = RandomUtils.nextInt(0, totalCount)
+                Article randomArticle = mongoTemplate.findOne(query.with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added')).skip(randomSkip).limit(1), Article)
+                randomArticles += randomArticle
+            }
+
+            return randomArticles as List
+        } catch (e) {
+            log.error "getting $count random unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e
+            throw new RuntimeException("getting $count random unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e)
         }
     }
 

@@ -25,6 +25,17 @@ class ArticleQuery implements GraphQLQueryResolver {
         }
     }
 
+    List<Article> getRandomUnread(String userId, List<String> skipIds, Integer count) {
+        log.info "receive graphql query randomUnread(userId=${userId}, skipIds=${skipIds}, count=${count})"
+
+        try {
+            return articlesService.getRandomUserUnreadArticles(userId, skipIds, count)
+        } catch (e) {
+            log.error "graphql query randomUnread(userId=${userId}, skipIds=${skipIds}, count=${count}) failed: $e.message", e
+            throw new RuntimeException("graphql query randomUnread(userId=${userId}, skipIds=${skipIds}, count=${count}) failed: $e.message", e)
+        }
+    }
+
     List<Article> getWithNonActualCard(Integer count) {
         log.info "receive graphql query withNonActualBasicCard(count=${count})"
 
