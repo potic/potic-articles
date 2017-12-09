@@ -6,7 +6,7 @@ import groovy.transform.builder.Builder
 import org.springframework.data.annotation.Id
 
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(includes = 'id')
 @ToString(includeNames = true)
 class Article {
 

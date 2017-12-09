@@ -6,6 +6,7 @@ import me.potic.articles.domain.Article
 import me.potic.articles.domain.Card
 import me.potic.articles.domain.PocketArticle
 import me.potic.articles.domain.User
+import org.apache.commons.lang3.RandomUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Sort
@@ -34,17 +35,18 @@ class ArticlesService {
         }
     }
 
-    List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
-        log.debug "getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength"
+    List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count, Integer minLength, Integer maxLength) {
+        log.debug "getting $count latest unread articles with min length ${minLength} and max length ${maxLength} for user $userId skipping articles with ids $skipIds..."
 
         try {
             Criteria[] criteria = []
             criteria += where('userId').is(userId)
             criteria += where('fromPocket.status').ne('1')
-            if (cursorId != null) {
-                Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
-                criteria += where('fromPocket.time_added').lt(cursorArticle.fromPocket.time_added)
+            if (skipIds != null && !skipIds.empty) {
+                criteria += where('id').nin(skipIds)
             }
+
+            criteria += where('card.actual').is(true)
 
             if (minLength != null) {
                 criteria += where('fromPocket.word_count').gt(minLength)
@@ -53,8 +55,6 @@ class ArticlesService {
                 criteria += where('fromPocket.word_count').lte(maxLength)
             }
 
-            criteria += where('card.actual').is(true)
-
             def query = query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added'))
             if (count != null) {
                 query = query.limit(count)
@@ -62,8 +62,40 @@ class ArticlesService {
 
             return mongoTemplate.find(query, Article)
         } catch (e) {
-            log.error "getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e
-            throw new RuntimeException("getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e)
+            log.error "getting $count latest unread articles with min length ${minLength} and max length ${maxLength} for user $userId skipping articles with ids $skipIds failed: $e.message", e
+            throw new RuntimeException("getting $count latest unread articles with min length ${minLength} and max length ${maxLength} for user $userId skipping articles with ids $skipIds failed: $e.message", e)
+        }
+    }
+
+    List<Article> getRandomUserUnreadArticles(String userId, List<String> skipIds, Integer count) {
+        log.debug "getting $count random unread articles for user $userId skipping articles with ids $skipIds..."
+
+        try {
+            Criteria[] criteria = []
+            criteria += where('userId').is(userId)
+            criteria += where('fromPocket.status').ne('1')
+            if (skipIds != null && !skipIds.empty) {
+                criteria += where('id').nin(skipIds)
+            }
+
+            criteria += where('card.actual').is(true)
+
+            def query = query(new Criteria().andOperator(criteria))
+
+            int totalCount = mongoTemplate.count(query, Article)
+
+            Set<Article> randomArticles = []
+
+            while (randomArticles.size() < count) {
+                int randomSkip = RandomUtils.nextInt(0, totalCount)
+                Article randomArticle = mongoTemplate.findOne(query.with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added')).skip(randomSkip).limit(1), Article)
+                randomArticles += randomArticle
+            }
+
+            return randomArticles as List
+        } catch (e) {
+            log.error "getting $count random unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e
+            throw new RuntimeException("getting $count random unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e)
         }
     }
 

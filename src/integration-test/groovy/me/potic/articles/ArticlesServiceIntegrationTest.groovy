@@ -60,9 +60,9 @@ class ArticlesServiceIntegrationTest extends Specification {
         mongoTemplate.insert(articles, Article)
     }
 
-    def 'List<Article> getUserUnreadArticles(String userId, cursorId = null, Integer count, minLength = null, maxLength = null)'() {
+    def 'List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds = null, Integer count, minLength = null, maxLength = null)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, null, null)
+        List<Article> articles = articlesService.getLatestUserUnreadArticles('TEST_USER_1', null, 10, null, null)
 
         then:
         articles.size() == 3
@@ -95,9 +95,9 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(String userId, cursorId = null, Integer count, minLength = null, maxLength = null) - limit count'() {
+    def 'List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count, minLength = null, maxLength = null) - limit count'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 1, null, null)
+        List<Article> articles = articlesService.getLatestUserUnreadArticles('TEST_USER_1', null, 1, null, null)
 
         then:
         articles.size() == 1
@@ -112,9 +112,9 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, minLength = null, maxLength = null)'() {
+    def 'List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count, minLength = null, maxLength = null)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', 'TEST_ARTICLE_2', 1, null, null)
+        List<Article> articles = articlesService.getLatestUserUnreadArticles('TEST_USER_1', ['TEST_ARTICLE_3', 'TEST_ARTICLE_2'], 10, null, null)
 
         then:
         articles.size() == 1
@@ -129,9 +129,9 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, Integer minLength, maxLength = null)'() {
+    def 'List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count, Integer minLength, maxLength = null)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, 250, null)
+        List<Article> articles = articlesService.getLatestUserUnreadArticles('TEST_USER_1', null, 10, 250, null)
 
         then:
         articles.size() == 1
@@ -146,9 +146,9 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, minLength = null, Integer maxLength)'() {
+    def 'List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count, minLength = null, Integer maxLength)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, null, 150)
+        List<Article> articles = articlesService.getLatestUserUnreadArticles('TEST_USER_1', null, 10, null, 150)
 
         then:
         articles.size() == 1
@@ -163,9 +163,9 @@ class ArticlesServiceIntegrationTest extends Specification {
         }
     }
 
-    def 'List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, Integer minLength, Integer maxLength)'() {
+    def 'List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count, Integer minLength, Integer maxLength)'() {
         when:
-        List<Article> articles = articlesService.getUserUnreadArticles('TEST_USER_1', null, 10, 150, 250)
+        List<Article> articles = articlesService.getLatestUserUnreadArticles('TEST_USER_1', null, 10, 150, 250)
 
         then:
         articles.size() == 1
