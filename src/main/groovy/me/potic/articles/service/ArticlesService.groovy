@@ -34,8 +34,8 @@ class ArticlesService {
         }
     }
 
-    List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count) {
-        log.debug "getting $count latest unread articles for user $userId skipping articles with ids $skipIds..."
+    List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count, Integer minLength, Integer maxLength) {
+        log.debug "getting $count latest unread articles with min length ${minLength} and max length ${maxLength} for user $userId skipping articles with ids $skipIds..."
 
         try {
             Criteria[] criteria = []
@@ -47,6 +47,13 @@ class ArticlesService {
 
             criteria += where('card.actual').is(true)
 
+            if (minLength != null) {
+                criteria += where('fromPocket.word_count').gt(minLength)
+            }
+            if (maxLength != null) {
+                criteria += where('fromPocket.word_count').lte(maxLength)
+            }
+
             def query = query(new Criteria().andOperator(criteria)).with(new Sort(Sort.Direction.DESC, 'fromPocket.time_added'))
             if (count != null) {
                 query = query.limit(count)
@@ -54,8 +61,8 @@ class ArticlesService {
 
             return mongoTemplate.find(query, Article)
         } catch (e) {
-            log.error "getting $count latest unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e
-            throw new RuntimeException("getting $count latest unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e)
+            log.error "getting $count latest unread articles with min length ${minLength} and max length ${maxLength} for user $userId skipping articles with ids $skipIds failed: $e.message", e
+            throw new RuntimeException("getting $count latest unread articles with min length ${minLength} and max length ${maxLength} for user $userId skipping articles with ids $skipIds failed: $e.message", e)
         }
     }
 
