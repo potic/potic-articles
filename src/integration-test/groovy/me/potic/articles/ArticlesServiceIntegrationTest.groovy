@@ -114,7 +114,7 @@ class ArticlesServiceIntegrationTest extends Specification {
 
     def 'List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count, minLength = null, maxLength = null)'() {
         when:
-        List<Article> articles = articlesService.getLatestUserUnreadArticles('TEST_USER_1', ['TEST_ARTICLE_2'], 1, null, null)
+        List<Article> articles = articlesService.getLatestUserUnreadArticles('TEST_USER_1', ['TEST_ARTICLE_3', 'TEST_ARTICLE_2'], 10, null, null)
 
         then:
         articles.size() == 1
