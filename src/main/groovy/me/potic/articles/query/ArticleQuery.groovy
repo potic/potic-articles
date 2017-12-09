@@ -14,14 +14,14 @@ class ArticleQuery implements GraphQLQueryResolver {
     @Autowired
     ArticlesService articlesService
 
-    List<Article> getUnread(String userId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
-        log.info "receive graphql query unread(userId=${userId}, cursorId=${cursorId}, count=${count}, minLength=${minLength}, maxLength=${maxLength})"
+    List<Article> getLatestUnread(String userId, List<String> skipIds, Integer count) {
+        log.info "receive graphql query latestUnread(userId=${userId}, skipIds=${skipIds}, count=${count})"
 
         try {
-            return articlesService.getUserUnreadArticles(userId, cursorId, count, minLength, maxLength)
+            return articlesService.getLatestUserUnreadArticles(userId, skipIds, count)
         } catch (e) {
-            log.error "graphql query unread(userId=${userId}, cursorId=${cursorId}, count=${count}, minLength=${minLength}, maxLength=${maxLength}) failed: $e.message", e
-            throw new RuntimeException("graphql query unread(userId=${userId}, cursorId=${cursorId}, count=${count}, minLength=${minLength}, maxLength=${maxLength}) failed: $e.message", e)
+            log.error "graphql query latestUnread(userId=${userId}, skipIds=${skipIds}, count=${count}) failed: $e.message", e
+            throw new RuntimeException("graphql query latestUnread(userId=${userId}, skipIds=${skipIds}, count=${count}) failed: $e.message", e)
         }
     }
 

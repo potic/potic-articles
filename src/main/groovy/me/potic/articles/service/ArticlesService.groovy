@@ -34,23 +34,15 @@ class ArticlesService {
         }
     }
 
-    List<Article> getUserUnreadArticles(String userId, String cursorId, Integer count, Integer minLength, Integer maxLength) {
-        log.debug "getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength"
+    List<Article> getLatestUserUnreadArticles(String userId, List<String> skipIds, Integer count) {
+        log.debug "getting $count latest unread articles for user $userId skipping articles with ids $skipIds..."
 
         try {
             Criteria[] criteria = []
             criteria += where('userId').is(userId)
             criteria += where('fromPocket.status').ne('1')
-            if (cursorId != null) {
-                Article cursorArticle = mongoTemplate.find(query(where('id').is(cursorId)), Article).first()
-                criteria += where('fromPocket.time_added').lt(cursorArticle.fromPocket.time_added)
-            }
-
-            if (minLength != null) {
-                criteria += where('fromPocket.word_count').gt(minLength)
-            }
-            if (maxLength != null) {
-                criteria += where('fromPocket.word_count').lte(maxLength)
+            if (skipIds != null && !skipIds.empty) {
+                criteria += where('id').nin(skipIds)
             }
 
             criteria += where('card.actual').is(true)
@@ -62,8 +54,8 @@ class ArticlesService {
 
             return mongoTemplate.find(query, Article)
         } catch (e) {
-            log.error "getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e
-            throw new RuntimeException("getting $count unread articles for user $userId starting from $cursorId with length between $minLength and $maxLength failed: $e.message", e)
+            log.error "getting $count latest unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e
+            throw new RuntimeException("getting $count latest unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e)
         }
     }
 

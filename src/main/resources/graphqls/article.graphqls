@@ -1,5 +1,5 @@
 type Query {
-    unread(userId: String!, cursorId: String, count: Int, minLength: Int, maxLength: Int): [Article]!
+    latestUnread(userId: String!, skipIds: [String], count: Int): [Article]!
 
     withNonActualCard(count: Int): [Article]!
 }
