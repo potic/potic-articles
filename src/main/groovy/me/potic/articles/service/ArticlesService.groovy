@@ -194,6 +194,7 @@ class ArticlesService {
             if (article.userId == null) article.userId = existing.userId
             if (article.fromPocket == null) article.fromPocket = existing.fromPocket
             if (article.card == null) article.card = existing.card
+            if (article.ranks == null) article.ranks = existing.ranks
 
             mongoTemplate.save(article)
         } catch (e) {
@@ -219,6 +220,23 @@ class ArticlesService {
         } catch (e) {
             log.error "getting $count articles with non-actual card failed: $e.message", e
             throw new RuntimeException("getting $count articles with non-actual card failed: $e.message", e)
+        }
+    }
+
+    List<Article> findWithoutRank(String rankId, int count) {
+        log.debug "getting $count articles without rank ${rankId}..."
+
+        try {
+            Query query = query(where('ranks.id').ne(rankId))
+
+            if (count != null) {
+                query = query.limit(count)
+            }
+
+            return mongoTemplate.find(query, Article)
+        } catch (e) {
+            log.error "getting $count articles without rank ${rankId} failed: $e.message", e
+            throw new RuntimeException("getting $count articles without rank ${rankId} failed: $e.message", e)
         }
     }
 

@@ -46,4 +46,15 @@ class ArticleQuery implements GraphQLQueryResolver {
             throw new RuntimeException("graphql query withNonActualBasicCard(count=${count}) failed: $e.message", e)
         }
     }
+
+    List<Article> getWithoutRank(String rankId, Integer count) {
+        log.info "receive graphql query withoutRank(rankId=${rankId}, count=${count})"
+
+        try {
+            return articlesService.findWithoutRank(rankId, count)
+        } catch (e) {
+            log.error "graphql query withoutRank(rankId=${rankId}, count=${count}) failed: $e.message", e
+            throw new RuntimeException("graphql query withoutRank(rankId=${rankId}, count=${count}) failed: $e.message", e)
+        }
+    }
 }
