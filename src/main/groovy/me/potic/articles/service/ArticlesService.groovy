@@ -11,13 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.aggregation.Aggregation
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation
+import org.springframework.data.mongodb.core.aggregation.AggregationResults
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Service
 
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*
 import static org.springframework.data.mongodb.core.query.Criteria.where
 import static org.springframework.data.mongodb.core.query.Query.query
 import static org.springframework.data.mongodb.core.query.Update.update
+import static org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Eq.valueOf
 
 @Service
 @Slf4j
@@ -96,6 +101,42 @@ class ArticlesService {
         } catch (e) {
             log.error "getting $count random unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e
             throw new RuntimeException("getting $count random unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e)
+        }
+    }
+
+    List<Article> getRecommendedUserUnreadArticles(String userId, String rankId, List<String> skipIds, Integer count) {
+        log.debug "getting $count recommended by ${rankId} unread articles for user $userId skipping articles with ids $skipIds..."
+
+        try {
+            Criteria[] criteria = []
+            criteria += where('ranks.id').is(rankId)
+            criteria += where('userId').is(userId)
+            criteria += where('fromPocket.status').ne('1')
+            if (skipIds != null && !skipIds.empty) {
+                criteria += where('id').nin(skipIds)
+            }
+
+            criteria += where('card.actual').is(true)
+
+            List<AggregationOperation> query = []
+
+            query += match(new Criteria().andOperator(criteria))
+
+            query += group('id', 'userId', 'fromPocket', 'card', 'ranks').first(valueOf('ranks.id').equalToValue(rankId)).as('rank')
+
+            query += sort(new Sort(Sort.Direction.DESC, 'rank'))
+            if (count != null) {
+                query += limit(count)
+            }
+
+            Aggregation aggregation = newAggregation(query)
+
+            AggregationResults<Article> result = mongoTemplate.aggregate(aggregation, Article, Article)
+
+            return result.mappedResults
+        } catch (e) {
+            log.error "getting $count recommended by ${rankId} unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e
+            throw new RuntimeException("getting $count recommended by ${rankId} unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e)
         }
     }
 
