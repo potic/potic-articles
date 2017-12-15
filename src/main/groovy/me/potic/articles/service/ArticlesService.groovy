@@ -99,6 +99,36 @@ class ArticlesService {
         }
     }
 
+    List<Article> getRankedUserUnreadArticles(String userId, String rankId, List<String> skipIds, Integer count) {
+        log.debug "getting $count ranked by ${rankId} unread articles for user $userId skipping articles with ids $skipIds..."
+
+        try {
+            Criteria[] criteria = []
+            criteria += where('ranks.id').is(rankId)
+            criteria += where('userId').is(userId)
+            criteria += where('fromPocket.status').ne('1')
+            if (skipIds != null && !skipIds.empty) {
+                criteria += where('id').nin(skipIds)
+            }
+
+            criteria += where('card.actual').is(true)
+
+            def query = query(new Criteria().andOperator(criteria))
+
+            List<Article> result = mongoTemplate.find(query, Article)
+            result = result.sort({ article -> -article.ranks.find({ rank -> rank.id == rankId }).value })
+
+            if (count != null) {
+                result = result.take(count)
+            }
+
+            return result
+        } catch (e) {
+            log.error "getting $count ranked by ${rankId} unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e
+            throw new RuntimeException("getting $count ranked by ${rankId} unread articles for user $userId skipping articles with ids $skipIds failed: $e.message", e)
+        }
+    }
+
     void markArticleAsRead(User user, String articleId) {
         log.debug "marking article ${articleId} as read for user ${user.id}"
 
@@ -194,6 +224,7 @@ class ArticlesService {
             if (article.userId == null) article.userId = existing.userId
             if (article.fromPocket == null) article.fromPocket = existing.fromPocket
             if (article.card == null) article.card = existing.card
+            if (article.ranks == null) article.ranks = existing.ranks
 
             mongoTemplate.save(article)
         } catch (e) {
@@ -219,6 +250,23 @@ class ArticlesService {
         } catch (e) {
             log.error "getting $count articles with non-actual card failed: $e.message", e
             throw new RuntimeException("getting $count articles with non-actual card failed: $e.message", e)
+        }
+    }
+
+    List<Article> findWithoutRank(String rankId, int count) {
+        log.debug "getting $count articles without rank ${rankId}..."
+
+        try {
+            Query query = query(where('ranks.id').ne(rankId))
+
+            if (count != null) {
+                query = query.limit(count)
+            }
+
+            return mongoTemplate.find(query, Article)
+        } catch (e) {
+            log.error "getting $count articles without rank ${rankId} failed: $e.message", e
+            throw new RuntimeException("getting $count articles without rank ${rankId} failed: $e.message", e)
         }
     }
 

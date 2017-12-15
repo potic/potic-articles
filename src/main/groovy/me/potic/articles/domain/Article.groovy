@@ -18,4 +18,6 @@ class Article {
     PocketArticle fromPocket
 
     Card card
+
+    List<Rank> ranks
 }

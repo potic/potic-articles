@@ -1,12 +1,12 @@
 FROM openjdk:8
 
-RUN mkdir -p /usr/src/potic-articles && mkdir -p /usr/app
+RUN mkdir -p /usr/src/potic-articles && mkdir -p /opt
 
 COPY build/distributions/* /usr/src/potic-articles/
 
-RUN unzip /usr/src/potic-articles/potic-articles-*.zip -d /usr/app/ && ln -s /usr/app/potic-articles-* /usr/app/potic-articles
+RUN unzip /usr/src/potic-articles/potic-articles-*.zip -d /opt/ && ln -s /opt/potic-articles-* /opt/potic-articles
 
-WORKDIR /usr/app/potic-articles
+WORKDIR /opt/potic-articles
 
 EXPOSE 8080
 ENV ENVIRONMENT_NAME test

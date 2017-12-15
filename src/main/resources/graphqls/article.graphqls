@@ -1,8 +1,10 @@
 type Query {
     latestUnread(userId: String!, skipIds: [String], count: Int!, minLength: Int, maxLength: Int): [Article]!
     randomUnread(userId: String!, skipIds: [String], count: Int!): [Article]!
+    rankedUnread(userId: String!, rankId: String, skipIds: [String], count: Int!): [Article]!
 
     withNonActualCard(count: Int): [Article]!
+    withoutRank(rankId: String, count: Int): [Article]!
 }
 
 type Article {
