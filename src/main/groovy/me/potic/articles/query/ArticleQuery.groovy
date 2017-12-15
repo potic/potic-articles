@@ -36,14 +36,14 @@ class ArticleQuery implements GraphQLQueryResolver {
         }
     }
 
-    List<Article> getRecommendedUnread(String userId, String rankId, List<String> skipIds, Integer count) {
-        log.info "receive graphql query recommendedUnread(userId=${userId}, rankId=${rankId}, skipIds=${skipIds}, count=${count})"
+    List<Article> getRankedUnread(String userId, String rankId, List<String> skipIds, Integer count) {
+        log.info "receive graphql query rankedUnread(userId=${userId}, rankId=${rankId}, skipIds=${skipIds}, count=${count})"
 
         try {
-            return articlesService.getRecommendedUserUnreadArticles(userId, rankId, skipIds, count)
+            return articlesService.getRankedUserUnreadArticles(userId, rankId, skipIds, count)
         } catch (e) {
-            log.error "graphql query recommendedUnread(userId=${userId}, rankId=${rankId}, skipIds=${skipIds}, count=${count}) failed: $e.message", e
-            throw new RuntimeException("graphql query recommendedUnread(userId=${userId}, rankId=${rankId}, skipIds=${skipIds}, count=${count}) failed: $e.message", e)
+            log.error "graphql query rankedUnread(userId=${userId}, rankId=${rankId}, skipIds=${skipIds}, count=${count}) failed: $e.message", e
+            throw new RuntimeException("graphql query rankedUnread(userId=${userId}, rankId=${rankId}, skipIds=${skipIds}, count=${count}) failed: $e.message", e)
         }
     }
 
