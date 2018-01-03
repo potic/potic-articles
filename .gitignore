@@ -15,3 +15,4 @@ build/
 # Development environment #
 logs/
 mongodb-dev.properties
+logzio-dev.properties
