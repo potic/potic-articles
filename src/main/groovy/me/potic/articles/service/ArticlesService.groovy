@@ -46,7 +46,7 @@ class ArticlesService {
                 criteria += where('id').nin(skipIds)
             }
 
-            criteria += where('card.id').exists(true)
+            criteria += where('card.pocketId').exists(true)
             criteria += where('card.actual').is(true)
 
             if (minLength != null) {
@@ -79,7 +79,7 @@ class ArticlesService {
                 criteria += where('id').nin(skipIds)
             }
 
-            criteria += where('card.id').exists(true)
+            criteria += where('card.pocketId').exists(true)
             criteria += where('card.actual').is(true)
 
             def query = query(new Criteria().andOperator(criteria))
@@ -113,7 +113,7 @@ class ArticlesService {
                 criteria += where('id').nin(skipIds)
             }
 
-            criteria += where('card.id').exists(true)
+            criteria += where('card.pocketId').exists(true)
             criteria += where('card.actual').is(true)
 
             def query = query(new Criteria().andOperator(criteria))
