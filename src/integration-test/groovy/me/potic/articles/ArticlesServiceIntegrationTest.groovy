@@ -42,20 +42,20 @@ class ArticlesServiceIntegrationTest extends Specification {
         articlesService.mongoTemplate = mongoTemplate
 
         List articles = [
-                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_1', resolved_title: 'TITLE_1', status: '0', word_count: 100, time_added: 1)).build(),
-                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_2', resolved_title: 'TITLE_2', status: '0', word_count: 200, time_added: 2)).build(),
-                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_3', resolved_title: 'TITLE_3', status: '0', word_count: 300, time_added: 3)).build(),
-                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_4', resolved_title: 'TITLE_4', status: '1', word_count: 100, time_added: 4)).build(),
-                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_5', resolved_title: 'TITLE_5', status: '0', word_count: 200, time_added: 5)).build(),
-                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'POCKET_6', resolved_title: 'TITLE_6', status: '1', word_count: 100, time_added: 6)).build(),
+                Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').card(new Card(actual: true, pocketId: 'POCKET_1')).fromPocket(new PocketArticle(item_id: 'POCKET_1', resolved_title: 'TITLE_1', status: '0', word_count: 100, time_added: 1)).build(),
+                Article.builder().id('TEST_ARTICLE_2').userId('TEST_USER_1').card(new Card(actual: true, pocketId: 'POCKET_2')).fromPocket(new PocketArticle(item_id: 'POCKET_2', resolved_title: 'TITLE_2', status: '0', word_count: 200, time_added: 2)).build(),
+                Article.builder().id('TEST_ARTICLE_3').userId('TEST_USER_1').card(new Card(actual: true, pocketId: 'POCKET_3')).fromPocket(new PocketArticle(item_id: 'POCKET_3', resolved_title: 'TITLE_3', status: '0', word_count: 300, time_added: 3)).build(),
+                Article.builder().id('TEST_ARTICLE_4').userId('TEST_USER_1').card(new Card(actual: true, pocketId: 'POCKET_4')).fromPocket(new PocketArticle(item_id: 'POCKET_4', resolved_title: 'TITLE_4', status: '1', word_count: 100, time_added: 4)).build(),
+                Article.builder().id('TEST_ARTICLE_5').userId('TEST_USER_2').card(new Card(actual: true, pocketId: 'POCKET_5')).fromPocket(new PocketArticle(item_id: 'POCKET_5', resolved_title: 'TITLE_5', status: '0', word_count: 200, time_added: 5)).build(),
+                Article.builder().id('TEST_ARTICLE_6').userId('TEST_USER_2').card(new Card(actual: true, pocketId: 'POCKET_6')).fromPocket(new PocketArticle(item_id: 'POCKET_6', resolved_title: 'TITLE_6', status: '1', word_count: 100, time_added: 6)).build(),
 
                 // same articles but non-actual
-                Article.builder().id('TEST_ARTICLE_01').userId('TEST_USER_1').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_1', status: '0', word_count: 100, time_added: 1)).build(),
-                Article.builder().id('TEST_ARTICLE_02').userId('TEST_USER_1').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_2', status: '0', word_count: 200, time_added: 2)).build(),
-                Article.builder().id('TEST_ARTICLE_03').userId('TEST_USER_1').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_3', status: '0', word_count: 300, time_added: 3)).build(),
-                Article.builder().id('TEST_ARTICLE_04').userId('TEST_USER_1').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_4', status: '1', word_count: 100, time_added: 4)).build(),
-                Article.builder().id('TEST_ARTICLE_05').userId('TEST_USER_2').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_5', status: '0', word_count: 200, time_added: 5)).build(),
-                Article.builder().id('TEST_ARTICLE_06').userId('TEST_USER_2').card(new Card(actual: false)).fromPocket(new PocketArticle(item_id: 'POCKET_6', status: '1', word_count: 100, time_added: 6)).build()
+                Article.builder().id('TEST_ARTICLE_01').userId('TEST_USER_1').card(new Card(actual: false, pocketId: 'POCKET_1')).fromPocket(new PocketArticle(item_id: 'POCKET_1', status: '0', word_count: 100, time_added: 1)).build(),
+                Article.builder().id('TEST_ARTICLE_02').userId('TEST_USER_1').card(new Card(actual: false, pocketId: 'POCKET_2')).fromPocket(new PocketArticle(item_id: 'POCKET_2', status: '0', word_count: 200, time_added: 2)).build(),
+                Article.builder().id('TEST_ARTICLE_03').userId('TEST_USER_1').card(new Card(actual: false, pocketId: 'POCKET_3')).fromPocket(new PocketArticle(item_id: 'POCKET_3', status: '0', word_count: 300, time_added: 3)).build(),
+                Article.builder().id('TEST_ARTICLE_04').userId('TEST_USER_1').card(new Card(actual: false, pocketId: 'POCKET_4')).fromPocket(new PocketArticle(item_id: 'POCKET_4', status: '1', word_count: 100, time_added: 4)).build(),
+                Article.builder().id('TEST_ARTICLE_05').userId('TEST_USER_2').card(new Card(actual: false, pocketId: 'POCKET_5')).fromPocket(new PocketArticle(item_id: 'POCKET_5', status: '0', word_count: 200, time_added: 5)).build(),
+                Article.builder().id('TEST_ARTICLE_06').userId('TEST_USER_2').card(new Card(actual: false, pocketId: 'POCKET_6')).fromPocket(new PocketArticle(item_id: 'POCKET_6', status: '1', word_count: 100, time_added: 6)).build()
         ]
         mongoTemplate.insert(articles, Article)
     }
