@@ -25,7 +25,7 @@ class FeedbackService {
             articleEvent.type = ArticleEventType.READ
             articleEvent.articleId = article.id
             articleEvent.userId = user.id
-            articleEvent.timestamp = LocalDateTime.now()
+            articleEvent.timestamp = LocalDateTime.now().toString()
 
             articlesService.addEventToArticle(articleId, articleEvent)
         } catch (e) {

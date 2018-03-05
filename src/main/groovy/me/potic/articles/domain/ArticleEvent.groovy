@@ -15,5 +15,5 @@ class ArticleEvent {
 
     ArticleEventType type
 
-    LocalDateTime timestamp
+    String timestamp
 }
