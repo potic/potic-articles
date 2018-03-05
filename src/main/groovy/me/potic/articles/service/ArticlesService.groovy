@@ -133,7 +133,7 @@ class ArticlesService {
         }
     }
 
-    void markArticleAsRead(User user, String articleId) {
+    Article markArticleAsRead(User user, String articleId) {
         log.debug "marking article ${articleId} as read for user ${user.id}"
 
         try {
@@ -143,6 +143,8 @@ class ArticlesService {
             }
 
             mongoTemplate.updateFirst(query(where('id').is(articleId)), update('fromPocket.status', '1'), Article)
+            readArticle.fromPocket.status = '1'
+            return readArticle
         } catch (e) {
             log.error "marking article ${articleId} as read for user ${user.id} failed: $e.message", e
             throw new RuntimeException("marking article ${articleId} as read for user ${user.id} failed: $e.message", e)

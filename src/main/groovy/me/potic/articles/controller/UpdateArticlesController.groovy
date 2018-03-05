@@ -6,6 +6,7 @@ import me.potic.articles.domain.ArticleEvent
 import me.potic.articles.domain.PocketArticle
 import me.potic.articles.domain.User
 import me.potic.articles.service.ArticlesService
+import me.potic.articles.service.FeedbackService
 import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -24,6 +25,9 @@ class UpdateArticlesController {
     @Autowired
     UserService userService
 
+    @Autowired
+    FeedbackService feedbackService
+
     @CrossOrigin
     @PostMapping(path = '/user/me/article/{articleId}/markAsRead')
     void markArticleAsRead(@PathVariable String articleId, final Principal principal) {
@@ -31,7 +35,8 @@ class UpdateArticlesController {
 
         try {
             User user = userService.findUserByAuth0Token(principal.token)
-            articlesService.markArticleAsRead(user, articleId)
+            Article article = articlesService.markArticleAsRead(user, articleId)
+            feedbackService.read(user, article)
         } catch (e) {
             log.error "POST request for /user/me/$articleId/markAsRead failed: $e.message", e
             throw new RuntimeException("POST request for /user/me/$articleId/markAsRead failed: $e.message", e)
