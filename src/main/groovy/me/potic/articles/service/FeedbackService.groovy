@@ -27,7 +27,7 @@ class FeedbackService {
             articleEvent.userId = user.id
             articleEvent.timestamp = LocalDateTime.now().toString()
 
-            articlesService.addEventToArticle(articleId, articleEvent)
+            articlesService.addEventToArticle(article.id, articleEvent)
         } catch (e) {
             log.error "emitting READ event for user ${user} and article ${article} failed: $e.message", e
             throw new RuntimeException("emitting READ event for user ${user} and article ${article} failed: $e.message", e)
