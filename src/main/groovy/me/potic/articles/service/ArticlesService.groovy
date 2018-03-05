@@ -223,7 +223,7 @@ class ArticlesService {
     }
 
     Article addEventToArticle(String articleId, ArticleEvent articleEvent) {
-        log.warn "adding event ${articleEvent} to article #${articleId}..."
+        log.info "adding event ${articleEvent} to article #${articleId}..."
 
         try {
             Article article = findArticle(articleId)
@@ -237,7 +237,7 @@ class ArticlesService {
     }
 
     Article update(Article article) {
-        log.warn "updating article ${article}..."
+        log.info "updating article ${article}..."
 
         try {
             mongoTemplate.save(article)
