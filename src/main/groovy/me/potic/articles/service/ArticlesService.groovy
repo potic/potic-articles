@@ -3,6 +3,7 @@ package me.potic.articles.service
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HttpBuilder
 import me.potic.articles.domain.Article
+import me.potic.articles.domain.ArticleEvent
 import me.potic.articles.domain.Card
 import me.potic.articles.domain.PocketArticle
 import me.potic.articles.domain.User
@@ -219,8 +220,35 @@ class ArticlesService {
         }
     }
 
+    Article addEventToArticle(String articleId, ArticleEvent articleEvent) {
+        log.warn "adding event ${articleEvent} to article #${articleId}..."
+
+        try {
+            Article article = findArticle(articleId)
+            articleEvent.articleId = articleId
+            article.events = (article.events ?: []) + articleEvent
+            return update(article)
+        } catch (e) {
+            log.error "adding event ${articleEvent} to article #${articleId} failed: $e.message", e
+            throw new RuntimeException("adding event ${articleEvent} to article #${articleId} failed: $e.message", e)
+        }
+    }
+
+    Article update(Article article) {
+        log.warn "updating article ${article}..."
+
+        try {
+            mongoTemplate.save(article)
+            return article
+        } catch (e) {
+            log.error "updating article ${article} failed: $e.message", e
+            throw new RuntimeException("updating article ${article} failed: $e.message", e)
+        }
+    }
+
+    @Deprecated
     void updateArticle(Article article) {
-        log.debug "updating article ${article}..."
+        log.warn "DEPRECATED: updating article ${article}..."
 
         try {
             Article existing = findArticle(article.id)

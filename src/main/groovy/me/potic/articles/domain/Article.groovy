@@ -20,4 +20,6 @@ class Article {
     Card card
 
     List<Rank> ranks
+
+    List<ArticleEvent> events
 }
