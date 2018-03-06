@@ -33,4 +33,21 @@ class FeedbackService {
             throw new RuntimeException("emitting READ event for user ${user} and article ${article} failed: $e.message", e)
         }
     }
+
+    void archived(User user, Article article) {
+        log.debug "emitting ARCHIVED event for user ${user} and article ${article}..."
+
+        try {
+            ArticleEvent articleEvent = new ArticleEvent()
+            articleEvent.type = ArticleEventType.ARCHIVED
+            articleEvent.articleId = article.id
+            articleEvent.userId = user.id
+            articleEvent.timestamp = LocalDateTime.now().toString()
+
+            articlesService.addEventToArticle(article.id, articleEvent)
+        } catch (e) {
+            log.error "emitting ARCHIVED event for user ${user} and article ${article} failed: $e.message", e
+            throw new RuntimeException("emitting ARCHIVED event for user ${user} and article ${article} failed: $e.message", e)
+        }
+    }
 }

@@ -43,6 +43,21 @@ class UpdateArticlesController {
         }
     }
 
+    @CrossOrigin
+    @PostMapping(path = '/user/me/article/{articleId}/markAsArchived')
+    void markArticleAsArchived(@PathVariable String articleId, final Principal principal) {
+        log.info "receive POST request for /user/me/$articleId/markAsArchived"
+
+        try {
+            User user = userService.findUserByAuth0Token(principal.token)
+            Article article = articlesService.markArticleAsArchived(user, articleId)
+            feedbackService.archived(user, article)
+        } catch (e) {
+            log.error "POST request for /user/me/$articleId/markAsArchived failed: $e.message", e
+            throw new RuntimeException("POST request for /user/me/$articleId/markAsArchived failed: $e.message", e)
+        }
+    }
+
     @PostMapping(path = '/user/{userId}/article/fromPocket')
     void upsertFromPocket(@PathVariable String userId, @RequestBody PocketArticle articleFromPocket) {
         log.info "receive POST request for /user/${userId}/article/fromPocket; BODY=${articleFromPocket}"

@@ -151,6 +151,24 @@ class ArticlesService {
         }
     }
 
+    Article markArticleAsArchived(User user, String articleId) {
+        log.debug "marking article ${articleId} as archived for user ${user.id}"
+
+        try {
+            Article archivedArticle = findArticle(articleId)
+            pocketApiRest.post {
+                request.uri.path = "/archive/${user.pocketAccessToken}/${archivedArticle.fromPocket.item_id}"
+            }
+
+            mongoTemplate.updateFirst(query(where('id').is(articleId)), update('fromPocket.status', '1'), Article)
+            archivedArticle.fromPocket.status = '1'
+            return archivedArticle
+        } catch (e) {
+            log.error "marking article ${articleId} as archived for user ${user.id} failed: $e.message", e
+            throw new RuntimeException("marking article ${articleId} as archived for user ${user.id} failed: $e.message", e)
+        }
+    }
+
     Article upsertFromPocket(String userId, PocketArticle articleFromPocket) {
         log.debug "upserting article $articleFromPocket for user $userId"
 
