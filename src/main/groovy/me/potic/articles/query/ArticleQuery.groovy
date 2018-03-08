@@ -68,4 +68,15 @@ class ArticleQuery implements GraphQLQueryResolver {
             throw new RuntimeException("graphql query withoutRank(rankId=${rankId}, count=${count}) failed: $e.message", e)
         }
     }
+
+    List<Article> getWithEvents(Integer count) {
+        log.info "receive graphql query getWithEvents(count=${count})"
+
+        try {
+            return articlesService.findWithEvents(count)
+        } catch (e) {
+            log.error "graphql query getWithEvents(count=${count}) failed: $e.message", e
+            throw new RuntimeException("graphql query getWithEvents(count=${count}) failed: $e.message", e)
+        }
+    }
 }

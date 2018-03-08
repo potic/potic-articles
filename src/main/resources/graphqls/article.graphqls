@@ -5,6 +5,8 @@ type Query {
 
     withNonActualCard(count: Int): [Article]!
     withoutRank(rankId: String, count: Int): [Article]!
+
+    withEvents(count: Int): [Article]!
 }
 
 type Article {
@@ -12,6 +14,7 @@ type Article {
     userId: String!
     fromPocket: PocketArticle
     card: Card
+    events: [ArticleEvent]
 }
 
 type PocketArticle {
@@ -113,4 +116,14 @@ type Card {
 
 type CardImage {
     src: String!
+}
+
+type ArticleEvent {
+    userId: String!
+
+    articleId: String!
+
+    type: String!
+
+    timestamp: String!
 }

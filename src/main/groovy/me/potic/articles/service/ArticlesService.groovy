@@ -303,6 +303,26 @@ class ArticlesService {
         }
     }
 
+    List<Article> findWithEvents(Integer count) {
+        log.debug "getting $count articles with events..."
+
+        try {
+            Query query = query(new Criteria().andOperator(
+                    where('events').exists(true),
+                    where('events').not().size(0)
+            ))
+
+            if (count != null) {
+                query = query.limit(count)
+            }
+
+            return mongoTemplate.find(query, Article)
+        } catch (e) {
+            log.error "getting $count articles with events failed: $e.message", e
+            throw new RuntimeException("getting $count articles with events failed: $e.message", e)
+        }
+    }
+
     private Article findArticle(String id) {
         mongoTemplate.find(query(where('id').is(id)), Article).first()
     }
