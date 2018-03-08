@@ -17,37 +17,37 @@ class FeedbackService {
     @Autowired
     ArticlesService articlesService
 
-    void read(User user, Article article) {
-        log.debug "emitting READ event for user ${user} and article ${article}..."
+    void liked(User user, Article article) {
+        log.debug "emitting LIKED event for user ${user} and article ${article}..."
 
         try {
             ArticleEvent articleEvent = new ArticleEvent()
-            articleEvent.type = ArticleEventType.READ
+            articleEvent.type = ArticleEventType.LIKED
             articleEvent.articleId = article.id
             articleEvent.userId = user.id
             articleEvent.timestamp = LocalDateTime.now().toString()
 
             articlesService.addEventToArticle(article.id, articleEvent)
         } catch (e) {
-            log.error "emitting READ event for user ${user} and article ${article} failed: $e.message", e
-            throw new RuntimeException("emitting READ event for user ${user} and article ${article} failed: $e.message", e)
+            log.error "emitting LIKED event for user ${user} and article ${article} failed: $e.message", e
+            throw new RuntimeException("emitting LIKED event for user ${user} and article ${article} failed: $e.message", e)
         }
     }
 
-    void archived(User user, Article article) {
-        log.debug "emitting ARCHIVED event for user ${user} and article ${article}..."
+    void disliked(User user, Article article) {
+        log.debug "emitting DISLIKED event for user ${user} and article ${article}..."
 
         try {
             ArticleEvent articleEvent = new ArticleEvent()
-            articleEvent.type = ArticleEventType.ARCHIVED
+            articleEvent.type = ArticleEventType.DISLIKED
             articleEvent.articleId = article.id
             articleEvent.userId = user.id
             articleEvent.timestamp = LocalDateTime.now().toString()
 
             articlesService.addEventToArticle(article.id, articleEvent)
         } catch (e) {
-            log.error "emitting ARCHIVED event for user ${user} and article ${article} failed: $e.message", e
-            throw new RuntimeException("emitting ARCHIVED event for user ${user} and article ${article} failed: $e.message", e)
+            log.error "emitting DISLIKED event for user ${user} and article ${article} failed: $e.message", e
+            throw new RuntimeException("emitting DISLIKED event for user ${user} and article ${article} failed: $e.message", e)
         }
     }
 }

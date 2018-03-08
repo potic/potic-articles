@@ -4,16 +4,11 @@ import groovy.util.logging.Slf4j
 import me.potic.articles.domain.Article
 import me.potic.articles.domain.ArticleEvent
 import me.potic.articles.domain.PocketArticle
-import me.potic.articles.domain.User
 import me.potic.articles.service.ArticlesService
-import me.potic.articles.service.FeedbackService
-import me.potic.articles.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-
-import java.security.Principal
 
 @RestController
 @Slf4j
@@ -21,42 +16,6 @@ class UpdateArticlesController {
 
     @Autowired
     ArticlesService articlesService
-
-    @Autowired
-    UserService userService
-
-    @Autowired
-    FeedbackService feedbackService
-
-    @CrossOrigin
-    @PostMapping(path = '/user/me/article/{articleId}/markAsRead')
-    void markArticleAsRead(@PathVariable String articleId, final Principal principal) {
-        log.info "receive POST request for /user/me/$articleId/markAsRead"
-
-        try {
-            User user = userService.findUserByAuth0Token(principal.token)
-            Article article = articlesService.markArticleAsRead(user, articleId)
-            feedbackService.read(user, article)
-        } catch (e) {
-            log.error "POST request for /user/me/$articleId/markAsRead failed: $e.message", e
-            throw new RuntimeException("POST request for /user/me/$articleId/markAsRead failed: $e.message", e)
-        }
-    }
-
-    @CrossOrigin
-    @PostMapping(path = '/user/me/article/{articleId}/markAsArchived')
-    void markArticleAsArchived(@PathVariable String articleId, final Principal principal) {
-        log.info "receive POST request for /user/me/$articleId/markAsArchived"
-
-        try {
-            User user = userService.findUserByAuth0Token(principal.token)
-            Article article = articlesService.markArticleAsArchived(user, articleId)
-            feedbackService.archived(user, article)
-        } catch (e) {
-            log.error "POST request for /user/me/$articleId/markAsArchived failed: $e.message", e
-            throw new RuntimeException("POST request for /user/me/$articleId/markAsArchived failed: $e.message", e)
-        }
-    }
 
     @PostMapping(path = '/user/{userId}/article/fromPocket')
     void upsertFromPocket(@PathVariable String userId, @RequestBody PocketArticle articleFromPocket) {
