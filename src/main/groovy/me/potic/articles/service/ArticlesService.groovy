@@ -229,22 +229,27 @@ class ArticlesService {
             Article article = findArticle(articleId)
             articleEvent.articleId = articleId
             article.events = (article.events ?: []) + articleEvent
-            return update(article)
+
+            mongoTemplate.save(article)
+            return article
         } catch (e) {
             log.error "adding event ${articleEvent} to article #${articleId} failed: $e.message", e
             throw new RuntimeException("adding event ${articleEvent} to article #${articleId} failed: $e.message", e)
         }
     }
 
-    Article update(Article article) {
-        log.info "updating article ${article}..."
+    Article updateArticleCard(String articleId, Card card) {
+        log.info "updating article #${articleId} with card ${card}..."
 
         try {
+            Article article = findArticle(articleId)
+            article.card = card
+
             mongoTemplate.save(article)
             return article
         } catch (e) {
-            log.error "updating article ${article} failed: $e.message", e
-            throw new RuntimeException("updating article ${article} failed: $e.message", e)
+            log.error "updating article #${articleId} with card ${card} failed: $e.message", e
+            throw new RuntimeException("updating article #${articleId} with card ${card} failed: $e.message", e)
         }
     }
 

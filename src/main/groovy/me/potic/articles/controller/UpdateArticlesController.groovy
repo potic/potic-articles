@@ -3,6 +3,7 @@ package me.potic.articles.controller
 import groovy.util.logging.Slf4j
 import me.potic.articles.domain.Article
 import me.potic.articles.domain.ArticleEvent
+import me.potic.articles.domain.Card
 import me.potic.articles.domain.PocketArticle
 import me.potic.articles.service.ArticlesService
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,6 +39,19 @@ class UpdateArticlesController {
             return new ResponseEntity<>(HttpStatus.OK)
         } catch (e) {
             log.error "POST request for /article/${articleId}/event; body=${articleEvent} failed: $e.message", e
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+    }
+
+    @PutMapping(path = '/article/{articleId}')
+    @ResponseBody ResponseEntity<Void> updateArticleCard(@PathVariable String articleId, @RequestBody Card card) {
+        log.info "receive PUT request for /article/${articleId}; body=${card}"
+
+        try {
+            articlesService.updateArticleCard(articleId, card)
+            return new ResponseEntity<>(HttpStatus.OK)
+        } catch (e) {
+            log.error "PUT request for /article/${articleId}; body=${card} failed: $e.message", e
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
