@@ -293,7 +293,7 @@ class ArticlesServiceIntegrationTest extends Specification {
                 time_read: 4,
                 word_count: 5
         )
-        Article alreadyIngested = Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').card(new Card(actual: true)).fromPocket(new PocketArticle(item_id: 'ALREADY_INGESTED_1', resolved_title: 'TITLE_1', status: '0', word_count: 100, time_added: 1)).build()
+        Article alreadyIngested = Article.builder().id('TEST_ARTICLE_1').userId('TEST_USER_1').card(new Card(timestamp: 3000)).fromPocket(new PocketArticle(item_id: 'ALREADY_INGESTED_1', resolved_title: 'TITLE_1', status: '0', word_count: 100, time_added: 1)).build()
 
         and:
         mongoTemplate.save(alreadyIngested)
