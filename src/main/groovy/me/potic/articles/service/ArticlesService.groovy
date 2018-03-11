@@ -48,8 +48,8 @@ class ArticlesService {
                 criteria += where('id').nin(skipIds)
             }
 
-            criteria += where('card.pocketId').exists(true)
-            criteria += where('card.actual').is(true)
+            criteria += where('card.url').exists(true)
+            criteria += where('card.title').exists(true)
 
             if (minLength != null) {
                 criteria += where('fromPocket.word_count').gt(minLength)
@@ -81,8 +81,8 @@ class ArticlesService {
                 criteria += where('id').nin(skipIds)
             }
 
-            criteria += where('card.pocketId').exists(true)
-            criteria += where('card.actual').is(true)
+            criteria += where('card.url').exists(true)
+            criteria += where('card.title').exists(true)
 
             def query = query(new Criteria().andOperator(criteria))
 
@@ -115,8 +115,8 @@ class ArticlesService {
                 criteria += where('id').nin(skipIds)
             }
 
-            criteria += where('card.pocketId').exists(true)
-            criteria += where('card.actual').is(true)
+            criteria += where('card.url').exists(true)
+            criteria += where('card.title').exists(true)
 
             def query = query(new Criteria().andOperator(criteria))
 
@@ -164,10 +164,6 @@ class ArticlesService {
             }
 
             article.fromPocket = articleFromPocket
-
-            if (article.card == null) article.card = new Card()
-            article.card.id = article.id
-            article.card.actual = false
 
             mongoTemplate.save(article)
 
@@ -261,6 +257,7 @@ class ArticlesService {
         try {
             Article article = findArticle(articleId)
             article.card = card
+            article.card.timestamp = System.currentTimeMillis()
 
             mongoTemplate.save(article)
             return article
@@ -274,16 +271,25 @@ class ArticlesService {
         log.debug "getting $count articles with non-actual card..."
 
         try {
-            Query query = query(new Criteria().andOperator(
-                    where('fromPocket').ne(null),
-                    new Criteria().orOperator(where('card.actual').is(null), where('card.actual').is(false))
+            Query withoutTimestampQuery = query(new Criteria().andOperator(
+                    where('fromPocket').exists(true),
+                    where('card.timestamp').exists(false)
             ))
-
             if (count != null) {
-                query = query.limit(count)
+                withoutTimestampQuery = withoutTimestampQuery.limit(count)
             }
+            Collection<Article> withoutTimestamp = mongoTemplate.find(withoutTimestampQuery, Article)
 
-            return mongoTemplate.find(query, Article)
+            Query withTimestampQuery = query(new Criteria().andOperator(
+                    where('fromPocket').exists(true),
+                    where('card.timestamp').exists(true)
+            )).with(new Sort(Sort.Direction.ASC, 'card.timestamp'))
+            if (count != null) {
+                withTimestampQuery = withoutTimestampQuery.limit(count - withoutTimestamp.size())
+            }
+            Collection<Article> withTimestamp = mongoTemplate.find(withTimestampQuery, Article)
+
+            return (withoutTimestamp + withTimestamp)
         } catch (e) {
             log.error "getting $count articles with non-actual card failed: $e.message", e
             throw new RuntimeException("getting $count articles with non-actual card failed: $e.message", e)

@@ -99,15 +99,15 @@ type PocketTag {
 type Card {
     id: ID!
 
-    pocketId: String!
+    timestamp: Long
 
-    actual: Boolean!
+    pocketId: String
 
-    url: String!
+    url: String
 
-    title: String!
+    title: String
 
-    source: String!
+    source: String
 
     excerpt: String
 
