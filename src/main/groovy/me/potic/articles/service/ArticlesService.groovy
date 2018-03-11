@@ -167,11 +167,6 @@ class ArticlesService {
 
             mongoTemplate.save(article)
 
-            if (article.card.id == null) {
-                article.card.id = article.id
-                mongoTemplate.save(article)
-            }
-
             return article
         } catch (e) {
             log.error "upserting article $articleFromPocket for user $userId failed: $e.message", e
@@ -257,6 +252,7 @@ class ArticlesService {
         try {
             Article article = findArticle(articleId)
             article.card = card
+            article.card.id = article.id
             article.card.timestamp = System.currentTimeMillis()
 
             mongoTemplate.save(article)
