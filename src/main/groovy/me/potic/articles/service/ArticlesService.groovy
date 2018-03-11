@@ -295,7 +295,10 @@ class ArticlesService {
         log.debug "getting $count articles without rank ${rankId}..."
 
         try {
-            Query query = query(where('ranks.id').ne(rankId))
+            Query query = query(new Criteria().andOperator(
+                    where('ranks.id').ne(rankId),
+                    where('card.source').exists(true)
+            ))
 
             if (count != null) {
                 query = query.limit(count)
