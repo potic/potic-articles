@@ -1,10 +1,10 @@
 package me.potic.articles.controller
 
 import groovy.util.logging.Slf4j
-import me.potic.articles.domain.Article
 import me.potic.articles.domain.ArticleEvent
 import me.potic.articles.domain.Card
 import me.potic.articles.domain.PocketArticle
+import me.potic.articles.domain.Rank
 import me.potic.articles.service.ArticlesService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -19,14 +19,15 @@ class UpdateArticlesController {
     ArticlesService articlesService
 
     @PostMapping(path = '/user/{userId}/article/fromPocket')
-    void upsertFromPocket(@PathVariable String userId, @RequestBody PocketArticle articleFromPocket) {
+    @ResponseBody ResponseEntity<Void> upsertFromPocket(@PathVariable String userId, @RequestBody PocketArticle articleFromPocket) {
         log.info "receive POST request for /user/${userId}/article/fromPocket; BODY=${articleFromPocket}"
 
         try {
             articlesService.upsertFromPocket(userId, articleFromPocket)
+            return new ResponseEntity<>(HttpStatus.OK)
         } catch (e) {
             log.error "POST request for /user/${userId}/article/fromPocket; BODY=${articleFromPocket} failed: $e.message", e
-            throw new RuntimeException("POST request for /user/${userId}/article/fromPocket; BODY=${articleFromPocket} failed: $e.message", e)
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
@@ -43,28 +44,29 @@ class UpdateArticlesController {
         }
     }
 
-    @PutMapping(path = '/article/{articleId}')
+    @PostMapping(path = '/article/{articleId}/card')
     @ResponseBody ResponseEntity<Void> updateArticleCard(@PathVariable String articleId, @RequestBody Card card) {
-        log.info "receive PUT request for /article/${articleId}; body=${card}"
+        log.info "receive POST request for /article/${articleId}/card; body=${card}"
 
         try {
             articlesService.updateArticleCard(articleId, card)
             return new ResponseEntity<>(HttpStatus.OK)
         } catch (e) {
-            log.error "PUT request for /article/${articleId}; body=${card} failed: $e.message", e
+            log.error "POST request for /article/${articleId}/card; body=${card} failed: $e.message", e
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 
-    @PutMapping(path = '/article')
-    void updateArticle(@RequestBody Article article) {
-        log.info "receive PUT request for /article; BODY=${article}"
+    @PostMapping(path = '/article/{articleId}/rank')
+    @ResponseBody ResponseEntity<Void> addRankToArticle(@PathVariable String articleId, @RequestBody Rank rank) {
+        log.info "receive POST request for /article/${articleId}/rank; body=${rank}"
 
         try {
-            articlesService.updateArticle(article)
+            articlesService.addRankToArticle(articleId, rank)
+            return new ResponseEntity<>(HttpStatus.OK)
         } catch (e) {
-            log.error "PUT request for /article; BODY=${article} failed: $e.message", e
-            throw new RuntimeException("PUT request for /article; BODY=${article} failed: $e.message", e)
+            log.error "POST request for /article/${articleId}/rank; body=${rank} failed: $e.message", e
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)
         }
     }
 }

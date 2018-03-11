@@ -6,6 +6,7 @@ import me.potic.articles.domain.Article
 import me.potic.articles.domain.ArticleEvent
 import me.potic.articles.domain.Card
 import me.potic.articles.domain.PocketArticle
+import me.potic.articles.domain.Rank
 import me.potic.articles.domain.User
 import org.apache.commons.lang3.RandomUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -238,6 +239,22 @@ class ArticlesService {
         }
     }
 
+    Article addRankToArticle(String articleId, Rank rank) {
+        log.info "adding rank ${rank} to article #${articleId}..."
+
+        try {
+            Article article = findArticle(articleId)
+
+            article.ranks = (article.ranks ?: []).findAll({ it.id != rank.id }) + rank
+
+            mongoTemplate.save(article)
+            return article
+        } catch (e) {
+            log.error "adding rank ${rank} to article #${articleId} failed: $e.message", e
+            throw new RuntimeException("adding rank ${rank} to article #${articleId} failed: $e.message", e)
+        }
+    }
+
     Article updateArticleCard(String articleId, Card card) {
         log.info "updating article #${articleId} with card ${card}..."
 
@@ -250,24 +267,6 @@ class ArticlesService {
         } catch (e) {
             log.error "updating article #${articleId} with card ${card} failed: $e.message", e
             throw new RuntimeException("updating article #${articleId} with card ${card} failed: $e.message", e)
-        }
-    }
-
-    @Deprecated
-    void updateArticle(Article article) {
-        log.warn "DEPRECATED: updating article ${article}..."
-
-        try {
-            Article existing = findArticle(article.id)
-            if (article.userId == null) article.userId = existing.userId
-            if (article.fromPocket == null) article.fromPocket = existing.fromPocket
-            if (article.card == null) article.card = existing.card
-            if (article.ranks == null) article.ranks = existing.ranks
-
-            mongoTemplate.save(article)
-        } catch (e) {
-            log.error "updating article ${article} failed: $e.message", e
-            throw new RuntimeException("updating article ${article} failed: $e.message", e)
         }
     }
 
