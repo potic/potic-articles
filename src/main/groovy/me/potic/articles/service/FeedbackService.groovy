@@ -61,7 +61,7 @@ class FeedbackService {
             articleEvent.userId = user.id
             articleEvent.timestamp = LocalDateTime.now().toString()
 
-            articlesService.addEventToArticle(article.id, articleEvent)
+            articlesService.addEventToArticle(articleId, articleEvent)
         } catch (e) {
             log.error "emitting SKIPPED event for user ${user} and article #${articleId} failed: $e.message", e
             throw new RuntimeException("emitting SKIPPED event for user ${user} and article #${articleId} failed: $e.message", e)
