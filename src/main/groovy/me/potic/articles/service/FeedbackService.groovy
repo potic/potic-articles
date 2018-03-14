@@ -51,7 +51,7 @@ class FeedbackService {
         }
     }
 
-    void skipped(User user, Integer articleId) {
+    void skipped(User user, String articleId) {
         log.debug "emitting SKIPPED event for user ${user} and article #${articleId}..."
 
         try {

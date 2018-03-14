@@ -43,8 +43,7 @@ class UserActionController {
             feedbackService.liked(user, article)
 
             if (likeArticleRequest?.skipIds != null) {
-                List<Integer> skipIds = likeArticleRequest.skipIds
-                skipIds.takeWhile({ skipId -> skipId != articleId }).forEach({ skipId -> feedbackService.skipped(user, skipId) })
+                likeArticleRequest.skipIds.takeWhile({ skipId -> skipId != articleId }).forEach({ skipId -> feedbackService.skipped(user, skipId) })
             }
 
             return new ResponseEntity<>(HttpStatus.OK)
