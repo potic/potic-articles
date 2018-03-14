@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
 
@@ -32,13 +33,20 @@ class UserActionController {
 
     @CrossOrigin
     @PostMapping(path = '/user/me/article/{articleId}/like')
-    @ResponseBody ResponseEntity<Void> likeArticle(@PathVariable String articleId, final Principal principal) {
+    @ResponseBody ResponseEntity<Void> likeArticle(@PathVariable String articleId, final Principal principal, @RequestBody(required = false) Map likeArticleRequest) {
         log.info "receive POST request for /user/me/$articleId/like"
 
         try {
             User user = userService.findUserByAuth0Token(principal.token)
             Article article = articlesService.markArticleAsRead(user, articleId)
+
             feedbackService.liked(user, article)
+
+            if (likeArticleRequest?.skipIds != null) {
+                List<Integer> skipIds = likeArticleRequest.skipIds
+                skipIds.takeWhile({ skipId -> skipId != articleId }).forEach({ skipId -> feedbackService.skipped(user, skipId) })
+            }
+
             return new ResponseEntity<>(HttpStatus.OK)
         } catch (e) {
             log.error "POST request for /user/me/$articleId/like failed: $e.message", e
