@@ -15,6 +15,7 @@ type Article {
     fromPocket: PocketArticle
     card: Card
     events: [ArticleEvent]
+    ranks: [Rank]
 }
 
 type PocketArticle {
@@ -126,4 +127,10 @@ type ArticleEvent {
     type: String!
 
     timestamp: String!
+}
+
+type Rank {
+    id: ID!
+
+    value: Double
 }
