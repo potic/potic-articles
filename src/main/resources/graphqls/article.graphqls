@@ -132,5 +132,5 @@ type ArticleEvent {
 type Rank {
     id: ID!
 
-    value: Double
+    value: Float
 }
