@@ -58,14 +58,14 @@ class ArticleQuery implements GraphQLQueryResolver {
         }
     }
 
-    List<Article> getWithoutRank(String rankId, Integer count) {
-        log.info "receive graphql query withoutRank(rankId=${rankId}, count=${count})"
+    List<Article> getWithOldestRank(String rankId, Integer count) {
+        log.info "receive graphql query withOldestRank(rankId=${rankId}, count=${count})"
 
         try {
-            return articlesService.findWithoutRank(rankId, count)
+            return articlesService.findWithOldestRank(rankId, count)
         } catch (e) {
-            log.error "graphql query withoutRank(rankId=${rankId}, count=${count}) failed: $e.message", e
-            throw new RuntimeException("graphql query withoutRank(rankId=${rankId}, count=${count}) failed: $e.message", e)
+            log.error "graphql query withOldestRank(rankId=${rankId}, count=${count}) failed: $e.message", e
+            throw new RuntimeException("graphql query withOldestRank(rankId=${rankId}, count=${count}) failed: $e.message", e)
         }
     }
 

@@ -292,23 +292,38 @@ class ArticlesService {
         }
     }
 
-    List<Article> findWithoutRank(String rankId, int count) {
-        log.debug "getting $count articles without rank ${rankId}..."
+    List<Article> findWithOldestRank(String rankId, int count) {
+        log.debug "getting $count articles with oldest rank ${rankId}..."
 
         try {
-            Query query = query(new Criteria().andOperator(
-                    where('ranks.id').ne(rankId),
-                    where('card.source').exists(true)
-            ))
-
+            Query withoutRankQuery = query(where('ranks.id').ne(rankId))
             if (count != null) {
-                query = query.limit(count)
+                withoutRankQuery = withoutRankQuery.limit(count)
+            }
+            List<Article> withOldestRank = mongoTemplate.find(withoutRankQuery, Article)
+
+            if (count != null && withOldestRank.size() < count) {
+                List<Article> articlesWithRank = mongoTemplate.find(query(where('ranks.id').is(rankId)), Article)
+                withOldestRank.addAll(
+                        articlesWithRank
+                                .findAll({ article -> article.ranks.find({ rank -> rank.id == rankId && rank.timestamp == null }) != null })
+                                .take(count - withOldestRank.size())
+                )
+
+                if (withOldestRank.size() < count) {
+                    withOldestRank.addAll(
+                            articlesWithRank
+                                    .findAll({ article -> article.ranks.find({ rank -> rank.id == rankId && rank.timestamp != null }) != null })
+                                    .sort({ article -> article.ranks.find({ rank -> rank.id == rankId && rank.timestamp != null }).timestamp })
+                                    .take(count - withOldestRank.size())
+                    )
+                }
             }
 
-            return mongoTemplate.find(query, Article)
+            return withOldestRank
         } catch (e) {
-            log.error "getting $count articles without rank ${rankId} failed: $e.message", e
-            throw new RuntimeException("getting $count articles without rank ${rankId} failed: $e.message", e)
+            log.error "getting $count articles with oldest rank ${rankId} failed: $e.message", e
+            throw new RuntimeException("getting $count articles with oldest rank ${rankId} failed: $e.message", e)
         }
     }
 

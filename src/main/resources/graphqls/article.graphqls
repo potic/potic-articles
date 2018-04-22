@@ -4,7 +4,7 @@ type Query {
     rankedUnread(userId: String!, rankId: String, skipIds: [String], count: Int!): [Article]!
 
     withNonActualCard(count: Int): [Article]!
-    withoutRank(rankId: String, count: Int): [Article]!
+    withOldestRank(rankId: String, count: Int): [Article]!
 
     withEvents(count: Int): [Article]!
 }
@@ -133,4 +133,6 @@ type Rank {
     id: ID!
 
     value: Float
+
+    timestamp: String
 }

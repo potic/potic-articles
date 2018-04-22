@@ -10,4 +10,6 @@ class Rank {
     String id
 
     double value
+
+    String timestamp
 }
