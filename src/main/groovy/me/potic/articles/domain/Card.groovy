@@ -21,5 +21,7 @@ class Card {
 
     String excerpt
 
+    Long addedTimestamp
+
     CardImage image
 }
