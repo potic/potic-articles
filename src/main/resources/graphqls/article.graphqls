@@ -112,6 +112,8 @@ type Card {
 
     excerpt: String
 
+    addedTimestamp: Long
+
     image: CardImage
 }
 
