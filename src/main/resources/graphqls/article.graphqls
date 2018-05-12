@@ -3,7 +3,7 @@ type Query {
     randomUnread(userId: String!, skipIds: [String], count: Int!): [Article]!
     rankedUnread(userId: String!, rankId: String, skipIds: [String], count: Int!): [Article]!
 
-    withNonActualCard(count: Int): [Article]!
+    withOldestCard(count: Int): [Article]!
     withOldestRank(rankId: String, count: Int): [Article]!
 
     withEvents(count: Int): [Article]!

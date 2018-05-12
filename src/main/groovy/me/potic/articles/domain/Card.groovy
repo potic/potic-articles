@@ -9,7 +9,7 @@ class Card {
 
     String id
 
-    long timestamp
+    Long timestamp
 
     String pocketId
 

@@ -263,32 +263,46 @@ class ArticlesService {
         }
     }
 
-    Collection<Article> findWithNonActualCard(Integer count) {
-        log.debug "getting $count articles with non-actual card..."
+    Collection<Article> findWithOldestCard(Integer count) {
+        log.debug "getting $count articles with oldest card..."
 
         try {
-            Query withoutTimestampQuery = query(new Criteria().andOperator(
+            Query withoutCardQuery = query(new Criteria().andOperator(
                     where('fromPocket').exists(true),
-                    where('card.timestamp').exists(false)
+                    where('card').exists(false)
             ))
             if (count != null) {
-                withoutTimestampQuery = withoutTimestampQuery.limit(count)
+                withoutCardQuery = withoutCardQuery.limit(count)
             }
-            Collection<Article> withoutTimestamp = mongoTemplate.find(withoutTimestampQuery, Article)
+            List<Article> withOldestCard = mongoTemplate.find(withoutCardQuery, Article)
 
-            Query withTimestampQuery = query(new Criteria().andOperator(
-                    where('fromPocket').exists(true),
-                    where('card.timestamp').exists(true)
-            )).with(new Sort(Sort.Direction.ASC, 'card.timestamp'))
-            if (count != null) {
-                withTimestampQuery = withoutTimestampQuery.limit(count - withoutTimestamp.size())
+            if (count != null && withOldestCard.size() < count) {
+                Query withCardQuery = query(new Criteria().andOperator(
+                        where('fromPocket').exists(true),
+                        where('card').exists(true)
+                ))
+                List<Article> articlesWithCard = mongoTemplate.find(withCardQuery, Article)
+
+                withOldestCard.addAll(
+                        articlesWithCard
+                                .findAll({ article -> article.card.timestamp == null })
+                                .take(count - withOldestCard.size())
+                )
+
+                if (withOldestCard.size() < count) {
+                    withOldestCard.addAll(
+                            articlesWithCard
+                                    .findAll({ article -> article.card.timestamp != null })
+                                    .sort({ article -> article.card.timestamp })
+                                    .take(count - withOldestCard.size())
+                    )
+                }
             }
-            Collection<Article> withTimestamp = mongoTemplate.find(withTimestampQuery, Article)
 
-            return (withoutTimestamp + withTimestamp)
+            return withOldestCard
         } catch (e) {
-            log.error "getting $count articles with non-actual card failed: $e.message", e
-            throw new RuntimeException("getting $count articles with non-actual card failed: $e.message", e)
+            log.error "getting $count articles with oldest card failed: $e.message", e
+            throw new RuntimeException("getting $count articles with oldest card failed: $e.message", e)
         }
     }
 

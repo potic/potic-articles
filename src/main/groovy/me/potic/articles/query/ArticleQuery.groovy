@@ -47,14 +47,14 @@ class ArticleQuery implements GraphQLQueryResolver {
         }
     }
 
-    List<Article> getWithNonActualCard(Integer count) {
-        log.info "receive graphql query withNonActualBasicCard(count=${count})"
+    List<Article> getWithOldestCard(Integer count) {
+        log.info "receive graphql query withOldestCard(count=${count})"
 
         try {
-            return articlesService.findWithNonActualCard(count)
+            return articlesService.findWithOldestCard(count)
         } catch (e) {
-            log.error "graphql query withNonActualBasicCard(count=${count}) failed: $e.message", e
-            throw new RuntimeException("graphql query withNonActualBasicCard(count=${count}) failed: $e.message", e)
+            log.error "graphql query withOldestCard(count=${count}) failed: $e.message", e
+            throw new RuntimeException("graphql query withOldestCard(count=${count}) failed: $e.message", e)
         }
     }
 
