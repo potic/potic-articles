@@ -51,6 +51,8 @@ type PocketArticle {
     videos: [PocketVideo]
 
     lang: String
+    time_to_read: String
+
     authors: [PocketAuthor]
 
     tags: [PocketTag]

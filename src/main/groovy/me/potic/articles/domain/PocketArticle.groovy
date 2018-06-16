@@ -36,6 +36,8 @@ class PocketArticle {
     List<PocketImage> images
 
     String lang
+    String time_to_read
+
     List<PocketAuthor> authors
 
     String has_video
