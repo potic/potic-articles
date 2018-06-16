@@ -50,6 +50,7 @@ type PocketArticle {
     has_video: String
     videos: [PocketVideo]
 
+    lang: String
     authors: [PocketAuthor]
 
     tags: [PocketTag]
